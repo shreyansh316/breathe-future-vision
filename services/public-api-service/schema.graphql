@@ -1,0 +1,98 @@
+type Query {
+  city(id: ID!): City
+  cities(filter: CityFilter): [City]
+  
+  forecast(cityId: ID!, hours: Int = 168): [ForecastPoint]
+  predictions(cityId: ID!): Predictions
+  
+  alerts(cityId: ID, status: AlertStatus): [Alert]
+  healthRisk(cityId: ID!, ageGroup: AgeGroup): HealthRiskScore
+  
+  pollutionSources(cityId: ID!): PollutionSourceBreakdown
+  comparison(cities: [ID!]): [CityComparison]
+}
+
+type City {
+  id: ID!
+  name: String!
+  lat: Float!
+  lng: Float!
+  state: String!
+  
+  currentAQI: Int
+  pm25: Float
+  pm10: Float
+  
+  forecast: [ForecastPoint]
+  recentAlerts: [Alert]
+}
+
+type ForecastPoint {
+  timestamp: String!
+  pm25Prediction: Float!
+  pm10Prediction: Float!
+  confidenceLower: Float!
+  confidenceUpper: Float!
+  confidence: Float!
+}
+
+type Predictions {
+  cityId: ID!
+  forecast: [ForecastPoint]
+}
+
+type Alert {
+  id: ID!
+  severity: String!
+  message: String!
+  timestamp: String!
+}
+
+type HealthRiskScore {
+  score: Float!
+  category: RiskCategory!
+  ageGroup: AgeGroup!
+  recommendations: [String!]!
+}
+
+type PollutionSourceBreakdown {
+  vehicular: Float!
+  industrial: Float!
+  dust: Float!
+  biomass: Float!
+}
+
+type CityComparison {
+  cityId: ID!
+  rank: Int!
+  score: Float!
+}
+
+input CityFilter {
+  state: String
+  minAQI: Int
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum RiskCategory {
+  CRITICAL
+  HIGH
+  MODERATE
+  LOW
+}
+
+enum AgeGroup {
+  children
+  adults
+  elderly
+  pregnant
+}
+
+type Subscription {
+  pollutionUpdated(cityId: ID!): City
+  alertTriggered(cityId: ID!): Alert
+}

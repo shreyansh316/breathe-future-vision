@@ -1,0 +1,21 @@
+{
+  "name": "alert-service",
+  "version": "1.0.0",
+  "description": "Alert Engine and Notifications",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "bullmq": "^4.12.0",
+    "kafkajs": "^2.2.4",
+    "nodemailer": "^6.9.3",
+    "twilio": "^4.14.0",
+    "pg": "^8.11.0",
+    "redis": "^4.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Enterprise Colors */
+    --bg-main: #0B0F19;         
+    --bg-card: #161C2A;         
+    --border-glow: #222F47;     
+    --text-primary: #F8FAFC;    
+    --text-secondary: #94A3B8;  
+    --aqi-good: #10B981;        
+    --aqi-moderate: #F59E0B;    
+    --aqi-poor: #EF4444;        
+    --aqi-severe: #8B5CF6;      
+    --aqi-hazardous: #7F1D1D;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-[#0a0f16]/80 backdrop-blur-md border border-white/10 shadow-2xl;
+  }
+
+  .dashboard-card {
+    background: rgba(22, 28, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dashboard-card:hover {
+    border-color: #38BDF8;
+    transform: translateY(-2px);
+  }
+
+  .interactive-element {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .interactive-element:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Leaflet Map Dark UI Overrides (Point 10 & 12) */
+  .leaflet-container {
+    background: #0B0F19 !important;
+  }
+  .leaflet-bar {
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  }
+  .leaflet-bar a {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    transition: all 0.3s ease !important;
+  }
+  .leaflet-bar a:hover {
+    background-color: rgba(30, 41, 59, 0.95) !important;
+    color: #fff !important;
+  }
+  .leaflet-popup-content-wrapper {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  }
+  .leaflet-popup-tip {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+  }
+  .leaflet-interactive {
+    transition: all 0.3s ease !important;
+  }
+
+  /* Advanced Hardware-Accelerated Animations */
+  @keyframes breathe {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 60px rgba(255, 255, 255, 0.6);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .animate-breathe-slow {
+    animation: breathe 4s ease-in-out infinite;
+  }
+  
+  .animate-breathe-medium {
+    animation: breathe 2s ease-in-out infinite;
+  }
+
+  .animate-breathe-fast {
+    animation: breathe 0.8s ease-in-out infinite;
+  }
+
+  /* VayuRakshak Revolution Section */
+  .revolution-container {
+    background: radial-gradient(130% 100% at 50% 0%, rgba(22, 28, 42, 0.8) 0%, #0B0F19 100%);
+    border: 1px solid #222F47;
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Sky-blue interactive cyber glow for primary action buttons */
+  .btn-primary-glow {
+    background: #10B981; /* Vivid Emerald Green */
+    color: #0B0F19;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.8); /* Shifts to hyper-bright sky blue on hover */
+    background: #38BDF8;
+  }
+}

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    ports:
+      - "8080:8080"
+    # Point 98: Secure Environment Key Injection
+    environment:
+      - VITE_MAPLIBRE_API_KEY=${VITE_MAPLIBRE_API_KEY}
+      - VITE_BACKEND_URL=http://localhost:5000
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.2
+    ports:
+      - "5001:5000"
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db
+    volumes:
+      - ./mlflow-data:/mlflow
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+
+networks:
+  vayunet-net:
+    driver: bridge
