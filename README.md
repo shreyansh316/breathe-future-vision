@@ -1,69 +1,93 @@
-Here is a structured, production-ready `README.md` file tailored for the **VayuRakshak** platform based on the webpage details.
+---
+
+# 🛰️ VayuRakshak (आकाशसेतु) — Real-Time Satellite Intelligence
+
+> **Empowering Bharat to breathe cleaner, live longer, and act smarter — with AI, satellites, and local data at your fingertips.**
+
+VayuRakshak is a next-generation environmental guardian platform built to monitor, predict, and mitigate air pollution across India. By fusing multi-spectral satellite observations, ground-level CPCB/IoT sensor data, and deep time-series machine learning architecture, the platform offers unprecedented high-fidelity environmental intelligence down to the street level.
 
 ---
 
-# VayuRakshak (आकाशसेतु) - Real-Time Satellite Intelligence
+## 🗺️ System Overview & Architecture
 
-> **India's AI-Powered Environmental Guardian**
-> *“Empowering Bharat to breathe cleaner, live longer, and act smarter — with AI, satellites, and local data at your fingertips.”*
+VayuRakshak functions via a multi-tiered pipeline that ingests, processes, and disseminates real-time geospatial information within seconds.
 
-VayuRakshak (AakaashSetu) is a cutting-edge, 2030-ready air pollution monitoring platform designed to protect public health across India. By fusing real-time satellite remote sensing, machine learning, and an extensive network of ground-based IoT sensors, the platform provides street-level AQI mapping, accurate 5-day predictive forecasting, and tailored wellness insights.
+```
+       [🛰️ SATELLITE INPUTS]             [🔬 GROUND INFRASTRUCTURE]
+(INSAT-3D • Sentinel-5P • MODIS)       (7,900+ CPCB Nodes • Rural IoT)
+               │                                       │
+               └───────────────────┬───────────────────┘
+                                   ▼
+                   [⚡ AI/ML FUSION DATA PIPELINE]
+               Anomaly Detection & Downscaling Engine
+                                   ▼
+                   [🤖 BREATHECAST FORECASTING SYSTEM]
+               Ensemble Model: LSTM + Prophet + XGBoost
+                                   ▼
+        ┌──────────────────────────┼──────────────────────────┐
+        ▼                          ▼                          ▼
+ [📲 JanAQI PWA App]     [🚜 AgroClean Dashboard]    [🚨 VayuGuard National Alert]
+Hyperlocal US/IN AQI       Active Fires & Stubble      Direct Link: NDMA / NGT /
+ Exposure Tracking         Pusa Bio-Decomposer         District Collectors
 
----
-
-## 🚀 Key Features
-
-* **VayuNet Command Center:** A unified, Bharat-wide environmental grid syncing data from over 7,900 nodes (CPCB, OpenAQ, rural IoT) alongside ISRO satellite feeds.
-* **BreatheCast AI:** A 5-day personalized pollutant forecasting engine powered by an ensemble machine learning model (LSTM + Random Forest + Prophet) achieving up to **99.2% AI accuracy**.
-* **AyurAQI Wellness Mode:** An innovative lifestyle feature that seamlessly bridges ancient Ayurvedic wisdom with real-time pollution metrics, offering personalized yoga, diet, and lifestyle recommendations.
-* **AgroClean / किसान ई-मित्र:** A dedicated module tracking stubble burning and active agricultural fires, providing farmers with smoke trajectory alerts and access to sustainable crop residue alternatives (e.g., *Pusa Bio-Decomposer*, *Happy Seeder* machines).
-* **JanAQI & Panchayat Board Generator:** Low-bandwidth (2G optimized) high-resolution QR code generator enabling local village Panchayats to print and display live local air quality statistics on physical community boards.
-* **AI Air Scanner (Beta):** Real-time computer vision analysis using device cameras to visually detect particulate matter and assess immediate environmental health risks.
-
----
-
-## 🛠️ Technical Architecture
-
-### Frontend
-
-* **Framework:** React + TypeScript
-* **Styling:** Tailwind CSS
-* **Mapping & Visuals:** Mapbox GL JS / Leaflet (for 3D WebGL globe visualizations)
-* **Deployment:** Progressive Web App (PWA) with offline caching capabilities
-
-### AI/ML Backend
-
-* **Core Tech:** Python + FastAPI
-* **Frameworks:** TensorFlow / PyTorch
-* **Models:** Random Forest (94.2% Acc), LSTM Neural Networks (91.8% Acc), and custom Attention Networks.
-* **Feature Importance Breakdown:** * Satellite Aerosol Optical Depth (AOD): **32%**
-* Wind Speed: **28%**
-* Humidity: **22%**
-* Temperature: **18%**
-
-
-
-### Data Ingestion Pipeline
-
-1. **Collection:** Multi-source data aggregation spanning **INSAT-3D, Sentinel-5P, and MODIS** satellites, CPCB/WAQI APIs, and local IoT nodes.
-2. **Processing:** Machine learning algorithms flag anomalies and parse geospatial metrics.
-3. **Prediction Engine:** Time-series models calculate predictive curves and trigger emergency response alerts.
-4. **Delivery:** Sub-2-second push delivery to end-users, NDMA, NGT, and local district collectors via the **VayuGuard National AI Alert System**.
+```
 
 ---
 
-## 📈 Platform Performance Indicators
+## 🔥 Key Components & Capabilities
 
-* **Accuracy:** 97.1% Ensemble Model Precision (RMSE: 12.4 $\mu g/m^3$, $R^2$ Score: 0.94)
-* **System Latency:** <2s API Response Time
-* **Throughput:** 10M+ Daily Environmental Data Points processed
-* **Uptime:** 99.2% operational availability
+### 1. VayuNet Command Center (Bharat-Wide Grid)
+
+* **Unified Sensor Ingestion:** Monitors **7,954+ Indian cities** combining CPCB, OpenAQ, and customized rural IoT endpoints.
+* **3D Pollution Visualization:** A WebGL interactive globe rendering pollution dispersion, wind currents, and particulate concentration layers.
+
+### 2. BreatheCast AI (5-Day Personalized Forecasts)
+
+Our time-series machine learning ensemble model incorporates satellite Aerosol Optical Depth (AOD) alongside meteorology to generate high-confidence forecasting:
+
+* **Ensemble Model Precision:** **97.1% Overall Accuracy** (RMSE: $12.4 \mu g/m^3$, $R^2$: $0.94$).
+* **Feature Weights:** Satellite AOD (**32%**), Wind Speed (**28%**), Humidity (**22%**), Temperature (**18%**).
+
+### 3. AyurAQI Wellness Mode
+
+* **Ancient Wisdom meets Big Data:** Contextualizes immediate "Very Poor" or "Hazardous" air quality metrics into proactive Ayurvedic guidance.
+* Provides real-time adaptive updates for **Daily Diet**, **Yoga & Breath control (Pranayama)**, and **Lifestyle Routines** based on active trace pollutants ($PM_{2.5}, PM_{10}, NO_2, SO_2, CO, O_3$).
+
+### 4. AgroClean / किसान ई-मित्र
+
+* **Agricultural Plume Tracking:** Scans and tracks active stubble fires with real-time alert systems tracking smoke path trajectories over 24–48 hours toward the National Capital Region (NCR).
+* **Sustainable Intervention:** Coordinates supply chains for **Pusa Bio-Decomposer** distribution and **Happy Seeder Machine** subsidies directly with regional village councils.
+
+### 5. JanAQI & Low-Bandwidth Panchayat Boards
+
+* **2G Optimizations:** Generates ultra-low data footprint, high-resolution **300 DPI QR landing code stickers** for display physical display boards inside rural Gram Panchayats.
 
 ---
 
-## 📂 API & Integrations
+## 🛠️ Technology Stack
 
-VayuRakshak natively integrates with global LLMs and data clients to expose intelligence smoothly:
+| Layer | Technologies Used |
+| --- | --- |
+| **Frontend UI/UX** | React, TypeScript, Tailwind CSS, Progressive Web App (PWA) Offline Caching |
+| **Geospatial Engines** | Mapbox GL JS, Leaflet OpenStreetMap Matrix |
+| **Core AI / Backend** | Python, FastAPI, TensorFlow, PyTorch, XGBoost |
+| **Multi-AI Logic Layer** | ChatGPT Integration (NLP search), Gemini (Reasoning), Copilot (Automation) |
+| **Data Pipelines** | Live WAQI API integration, ISRO Satellite Feed Sync, CPCB Endpoint Array |
 
-* **Advanced AI Integration:** Backed by ChatGPT, Gemini, and Copilot for natural language voice search, reasoning, and environmental software development.
-* **Automated Compliance Reports:** Enterprise feature allowing local jurisdictions or facilities to generate official, audit-ready CSV/PDF environmental impact statements.
+---
+
+## 📊 Core Performance Metrics
+
+* **System Latency:** $<2s$ API Response Times.
+* **Throughput Capacity:** Processing **10M+ Daily Environmental Data Points**.
+* **System Reliability:** $99.2\%$ Operational Cloud Uptime.
+* **Data Refresh Cadence:** $10\text{-minute}$ automated cycles across all active regional sensory grids.
+
+---
+
+## 🗃️ Enterprise Features: Compliance & Reporting
+
+VayuRakshak includes an automated auditing mechanism for local jurisdictions and facilities:
+
+* **Automated Compliance Reports:** Generates official, audit-ready **PDF, CSV, and API** compliance outputs mapping historical 30-day tracking data against national regulatory pollutant mandates.
+* **AI Air Scanner:** Computer vision interface leveraging edge device cameras for instantaneous ambient air analysis and particulate matter validation.
