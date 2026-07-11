@@ -1,73 +1,69 @@
-# Welcome to your Lovable project
+Here is a structured, production-ready `README.md` file tailored for the **VayuRakshak** platform based on the webpage details.
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/23bfb8dc-0796-4387-b6a3-2bd79096487c
+# VayuRakshak (आकाशसेतु) - Real-Time Satellite Intelligence
 
-## How can I edit this code?
+> **India's AI-Powered Environmental Guardian**
+> *“Empowering Bharat to breathe cleaner, live longer, and act smarter — with AI, satellites, and local data at your fingertips.”*
 
-There are several ways of editing your application.
+VayuRakshak (AakaashSetu) is a cutting-edge, 2030-ready air pollution monitoring platform designed to protect public health across India. By fusing real-time satellite remote sensing, machine learning, and an extensive network of ground-based IoT sensors, the platform provides street-level AQI mapping, accurate 5-day predictive forecasting, and tailored wellness insights.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/23bfb8dc-0796-4387-b6a3-2bd79096487c) and start prompting.
+## 🚀 Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+* **VayuNet Command Center:** A unified, Bharat-wide environmental grid syncing data from over 7,900 nodes (CPCB, OpenAQ, rural IoT) alongside ISRO satellite feeds.
+* **BreatheCast AI:** A 5-day personalized pollutant forecasting engine powered by an ensemble machine learning model (LSTM + Random Forest + Prophet) achieving up to **99.2% AI accuracy**.
+* **AyurAQI Wellness Mode:** An innovative lifestyle feature that seamlessly bridges ancient Ayurvedic wisdom with real-time pollution metrics, offering personalized yoga, diet, and lifestyle recommendations.
+* **AgroClean / किसान ई-मित्र:** A dedicated module tracking stubble burning and active agricultural fires, providing farmers with smoke trajectory alerts and access to sustainable crop residue alternatives (e.g., *Pusa Bio-Decomposer*, *Happy Seeder* machines).
+* **JanAQI & Panchayat Board Generator:** Low-bandwidth (2G optimized) high-resolution QR code generator enabling local village Panchayats to print and display live local air quality statistics on physical community boards.
+* **AI Air Scanner (Beta):** Real-time computer vision analysis using device cameras to visually detect particulate matter and assess immediate environmental health risks.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Technical Architecture
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Frontend
 
-Follow these steps:
+* **Framework:** React + TypeScript
+* **Styling:** Tailwind CSS
+* **Mapping & Visuals:** Mapbox GL JS / Leaflet (for 3D WebGL globe visualizations)
+* **Deployment:** Progressive Web App (PWA) with offline caching capabilities
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### AI/ML Backend
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+* **Core Tech:** Python + FastAPI
+* **Frameworks:** TensorFlow / PyTorch
+* **Models:** Random Forest (94.2% Acc), LSTM Neural Networks (91.8% Acc), and custom Attention Networks.
+* **Feature Importance Breakdown:** * Satellite Aerosol Optical Depth (AOD): **32%**
+* Wind Speed: **28%**
+* Humidity: **22%**
+* Temperature: **18%**
 
-# Step 3: Install the necessary dependencies.
-npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
-**Edit a file directly in GitHub**
+### Data Ingestion Pipeline
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Collection:** Multi-source data aggregation spanning **INSAT-3D, Sentinel-5P, and MODIS** satellites, CPCB/WAQI APIs, and local IoT nodes.
+2. **Processing:** Machine learning algorithms flag anomalies and parse geospatial metrics.
+3. **Prediction Engine:** Time-series models calculate predictive curves and trigger emergency response alerts.
+4. **Delivery:** Sub-2-second push delivery to end-users, NDMA, NGT, and local district collectors via the **VayuGuard National AI Alert System**.
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📈 Platform Performance Indicators
 
-## What technologies are used for this project?
+* **Accuracy:** 97.1% Ensemble Model Precision (RMSE: 12.4 $\mu g/m^3$, $R^2$ Score: 0.94)
+* **System Latency:** <2s API Response Time
+* **Throughput:** 10M+ Daily Environmental Data Points processed
+* **Uptime:** 99.2% operational availability
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📂 API & Integrations
 
-## How can I deploy this project?
+VayuRakshak natively integrates with global LLMs and data clients to expose intelligence smoothly:
 
-Simply open [Lovable](https://lovable.dev/projects/23bfb8dc-0796-4387-b6a3-2bd79096487c) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+* **Advanced AI Integration:** Backed by ChatGPT, Gemini, and Copilot for natural language voice search, reasoning, and environmental software development.
+* **Automated Compliance Reports:** Enterprise feature allowing local jurisdictions or facilities to generate official, audit-ready CSV/PDF environmental impact statements.
