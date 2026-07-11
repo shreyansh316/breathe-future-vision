@@ -71,7 +71,8 @@ export const PredictiveForecast: React.FC<PredictiveForecastProps> = ({ cityId }
             type="monotone"
             dataKey="pm25"
             stroke="#8884d8"
-            fillOpacity={1}
+            fillOpacity={0}
+            strokeWidth={1.5}
             fill="url(#colorPM25)"
             name="Predicted PM2.5"
           />

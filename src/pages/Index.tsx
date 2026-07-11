@@ -19,8 +19,15 @@ import { ExposureDashboard } from '@/components/ExposureDashboard';
 import { VillageQRScanner } from '@/components/VillageQRScanner';
 import { AyurAQIDashboard } from '@/components/AyurAQIDashboard';
 import { AgroCleanDashboard } from '@/components/AgroCleanDashboard';
+import { ArAirFilter } from '@/components/ArAirFilter';
+import { CarbonCreditsDashboard } from '@/components/CarbonCreditsDashboard';
+import { CleanAirPanchayats } from '@/components/CleanAirPanchayats';
+import { KisanEMitraDashboard } from '@/components/KisanEMitraDashboard';
 import { VayuGuardAlerts } from '@/components/VayuGuardAlerts';
-import { AIAssistantWidget } from '@/components/AIAssistantWidget';
+import { VayuGuardRuleEngine } from '@/components/VayuGuardRuleEngine';
+import { AuthorityDispatcher } from '@/components/AuthorityDispatcher';
+import { SystemObservability } from '@/components/SystemObservability';
+import { CommandPalette } from '@/components/CommandPalette';
 import { Earth3D } from '@/components/Earth3D';
 import { UniqueTools } from '@/components/UniqueTools';
 import { VayuRakshak2030 } from '@/components/VayuRakshak2030';
@@ -31,7 +38,8 @@ import { usePollutionData } from '@/hooks/usePollutionData';
 import { useFireData } from '@/hooks/useFireData';
 import { useVayuGuard } from '@/hooks/useVayuGuard';
 import { Card } from '@/components/ui/card';
-import { PWAPrompt } from '@/components/PWAPrompt';
+import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const Index = () => {
   const { cities } = usePollutionData();
@@ -41,7 +49,7 @@ const Index = () => {
   const selectedCity = majorCities.find(city => city.name === selectedCityName) || majorCities[0];
 
   const { fires } = useFireData();
-  const { alertHistory, clearHistory } = useVayuGuard(selectedCity.aqi, selectedCity.name, fires.length);
+  const { alertHistory, clearHistory, addAlert } = useVayuGuard(selectedCity.actualAqi || selectedCity.pm25, selectedCity.name, fires.length);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#121416] via-[#1a1d20] to-[#25282c] relative overflow-hidden">
@@ -56,7 +64,9 @@ const Index = () => {
         
         {/* High-Fidelity UI Presentation Dashboard */}
         <section className="py-12 px-4 relative z-20 -mt-16">
-          <AirQualityDashboard />
+          <ErrorBoundary fallbackMessage="The Air Quality Dashboard failed to load. Please check your data connection.">
+            <AirQualityDashboard />
+          </ErrorBoundary>
         </section>
 
         {/* Dynamic Platform Showcase Tabs */}
@@ -67,7 +77,9 @@ const Index = () => {
         {/* Enhanced 3D Earth Section */}
         <section className="py-12 sm:py-20 px-4">
           <div className="max-w-5xl mx-auto">
-            <Earth3D />
+            <ErrorBoundary fallbackMessage="3D WebGL Context Failed.">
+              <Earth3D />
+            </ErrorBoundary>
           </div>
         </section>
         
@@ -78,10 +90,17 @@ const Index = () => {
           </div>
         </section>
 
+        {/* AR Pollution Simulator Section */}
+        <section className="py-12 px-4 relative z-20">
+          <div className="max-w-7xl mx-auto">
+            <ArAirFilter initialAQI={selectedCity.pm25 || 150} />
+          </div>
+        </section>
+
         {/* AyurAQI Wellness Section */}
         <section className="py-12 px-4 bg-[#F1F8E9]">
           <div className="max-w-7xl mx-auto">
-            <AyurAQIDashboard currentAQI={selectedCity.aqi} />
+            <AyurAQIDashboard currentAQI={selectedCity.actualAqi || selectedCity.pm25} />
           </div>
         </section>
 
@@ -89,12 +108,23 @@ const Index = () => {
         <section className="py-12 px-4 bg-[#FFFDE7]">
           <div className="max-w-7xl mx-auto">
             <AgroCleanDashboard />
+            <KisanEMitraDashboard />
+            <CleanAirPanchayats />
           </div>
         </section>
         
+        {/* Carbon Credits Gamification Section */}
+        <section className="py-12 px-4">
+          <div className="max-w-7xl mx-auto">
+            <CarbonCreditsDashboard />
+          </div>
+        </section>
+
         <section className="py-12 sm:py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <VayuNetDashboard />
+            <ErrorBoundary fallbackMessage="VayuNet GIS Dashboard crashed. Recovering map state...">
+              <VayuNetDashboard />
+            </ErrorBoundary>
           </div>
         </section>
         
@@ -116,7 +146,9 @@ const Index = () => {
                 </p>
               </div>
             </Card>
-            <CityComparison selectedCity={selectedCity} allCities={majorCities} />
+            <ErrorBoundary fallbackMessage="Comparison matrix failed to process.">
+              <CityComparison selectedCity={selectedCity} allCities={majorCities} />
+            </ErrorBoundary>
           </div>
         </section>
         
@@ -131,7 +163,10 @@ const Index = () => {
         {/* Enterprise Compliance Report Generator */}
         <section className="py-12 px-4 bg-[#121416]">
           <div className="max-w-6xl mx-auto">
+            <VayuGuardRuleEngine />
+            <AuthorityDispatcher />
             <ComplianceReportGenerator />
+            <SystemObservability />
           </div>
         </section>
 
@@ -145,10 +180,18 @@ const Index = () => {
         </section>
       </div>
 
-      {/* AI Assistant - Floating Chat Widget */}
-      <AIAssistantWidget />
-      <PWAPrompt />
-      <VayuGuardAlerts alertHistory={alertHistory} onClear={clearHistory} />
+      <CommandPalette />
+      <PwaInstallPrompt />
+      <VayuGuardAlerts 
+        alertHistory={alertHistory} 
+        onClear={clearHistory} 
+        onTestAlarm={() => addAlert({
+          type: 'CRITICAL_AQI',
+          title: 'TEST EMERGENCY ALARM',
+          message: 'This is a simulated Critical AQI emergency alert. GRAP Stage 4 protocols testing.',
+          location: selectedCity.name
+        })}
+      />
       <AppFooter />
     </div>
   );

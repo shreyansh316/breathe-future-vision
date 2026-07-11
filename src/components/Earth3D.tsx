@@ -163,8 +163,18 @@ export const Earth3D = () => {
           {(currentCity.dominentPol || currentCity.lastUpdate) && (
             <div className="border-t pt-2 mt-3 text-xs text-[#263238]/60">
               {currentCity.dominentPol && (
-                <div className="mb-1">
-                  <strong>Dominant Pollutant:</strong> {currentCity.dominentPol.toUpperCase()}
+                <div className="mb-2 flex items-center justify-between bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200">
+                  <span className="font-semibold text-slate-600 flex items-center gap-1">
+                    Dominant Pollutant
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-white px-2 py-0.5 rounded text-xs font-bold font-mono tracking-tighter text-slate-800 shadow-sm">
+                      {currentCity.dominentPol.toUpperCase()}
+                    </span>
+                    <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100">
+                      78% Load
+                    </span>
+                  </div>
                 </div>
               )}
               {currentCity.lastUpdate && (
@@ -178,27 +188,27 @@ export const Earth3D = () => {
       )}
 
       {/* Legend */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center mb-4">
-        <div className="p-2 sm:p-3 bg-white/60 rounded-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-center space-x-1 mb-1">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium">Good</span>
-          </div>
-          <p className="text-xs text-gray-600">0-12 PM2.5</p>
+      <div className="mb-4 bg-[#0a0f16]/40 backdrop-blur-md rounded-xl p-3 border border-white/10 shadow-lg w-full max-w-sm mx-auto">
+        <div className="flex justify-between text-[10px] uppercase font-bold text-slate-300 mb-1.5 px-1">
+          <span>Good</span>
+          <span>Mod</span>
+          <span>Poor</span>
+          <span>Sev</span>
+          <span>Haz</span>
         </div>
-        <div className="p-2 sm:p-3 bg-white/60 rounded-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-center space-x-1 mb-1">
-            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium">Moderate</span>
-          </div>
-          <p className="text-xs text-gray-600">35-55 PM2.5</p>
+        <div className="h-2 w-full rounded-full bg-gradient-to-r from-green-500 via-yellow-400 via-orange-400 via-red-500 to-purple-600 relative shadow-inner overflow-hidden border border-white/5">
+          <div className="absolute top-0 bottom-0 left-[20%] w-[1px] bg-white/30" />
+          <div className="absolute top-0 bottom-0 left-[40%] w-[1px] bg-white/30" />
+          <div className="absolute top-0 bottom-0 left-[60%] w-[1px] bg-white/30" />
+          <div className="absolute top-0 bottom-0 left-[80%] w-[1px] bg-white/30" />
         </div>
-        <div className="p-2 sm:p-3 bg-white/60 rounded-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-center space-x-1 mb-1">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium">Severe</span>
-          </div>
-          <p className="text-xs text-gray-600">250+ PM2.5</p>
+        <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1.5 px-1">
+          <span>0</span>
+          <span>50</span>
+          <span>100</span>
+          <span>200</span>
+          <span>300</span>
+          <span>500+</span>
         </div>
       </div>
 

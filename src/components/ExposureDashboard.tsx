@@ -39,33 +39,29 @@ export const ExposureDashboard = () => {
       <div className="p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           
-          {/* Exposure Ring */}
-          <div className="relative w-40 h-40 flex-shrink-0">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-gray-700"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${percentage * 2.83} 283`}
-                className={`${ringColor} transition-all duration-1000 ease-out`}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-black">{Math.round(exposure.cumulativeExposure)}</span>
-              <span className="text-xs text-gray-400">µg/m³ hr</span>
+          {/* Linear Exposure Spectrum Bar */}
+          <div className="w-full md:w-1/3 mb-4 md:mb-0 pr-0 md:pr-6 border-b md:border-b-0 md:border-r border-[#1E293B] pb-4 md:pb-0">
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-semibold text-gray-400">Cumulative Load</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-mono font-bold text-white">{Math.round(exposure.cumulativeExposure)}</span>
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest">µg/m³ hr</span>
+              </div>
+            </div>
+            
+            <div className="relative pt-2">
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 shadow-inner"></div>
+              {/* Sharp Needle Pointer */}
+              <div 
+                className="absolute top-0 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white transition-all duration-1000 ease-out drop-shadow-md"
+                style={{ left: `calc(${percentage}% - 6px)` }}
+              ></div>
+            </div>
+            
+            <div className="flex justify-between text-[10px] font-mono text-gray-500 mt-2">
+              <span>0</span>
+              <span>{maxLimit / 2}</span>
+              <span>{maxLimit} LIMIT</span>
             </div>
           </div>
 
@@ -83,7 +79,7 @@ export const ExposureDashboard = () => {
                 <MapPin className="w-3 h-3 mr-1 text-blue-400" /> Location
               </div>
               <div className="font-bold text-sm truncate">
-                {location ? `${location.lat.toFixed(2)}, ${location.lon.toFixed(2)}` : 'Simulated GPS'}
+                {location ? `${location.lat.toFixed(2)}, ${location.lon.toFixed(2)}` : 'GPS / CoreLocation API Stream'}
               </div>
             </div>
             

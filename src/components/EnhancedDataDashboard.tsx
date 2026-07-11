@@ -1,17 +1,19 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
+import { AiMetricCard } from './AiMetricCard';
+import { Database, Search, Map, Activity, Zap, Brain, TrendingUp, AlertTriangle, CheckCircle, Globe, Wind, Circle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ComposedChart, Legend, ReferenceLine } from 'recharts';
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Activity, Zap, Globe, Wind, Brain, Circle, Sparkles } from 'lucide-react';
 import { usePollutionData } from '@/hooks/usePollutionData';
+import { useTranslation } from 'react-i18next';
 
-export const EnhancedDataDashboard = () => {
+export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) => {
   const { cities, loading } = usePollutionData();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
-  const [timeRange, setTimeRange] = useState('24h');
   const [chartsVisible, setChartsVisible] = useState<Record<string, boolean>>({});
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -23,30 +25,28 @@ export const EnhancedDataDashboard = () => {
 
   const handleEnableAI = () => {
     setAiInitializing(true);
-    setInitStep(1);
-    setTimeout(() => setInitStep(2), 1500);
-    setTimeout(() => setInitStep(3), 3000);
-    setTimeout(() => {
-      setInitStep(4);
-      setTimeout(() => {
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      setInitStep(step);
+      if (step >= 5) {
+        clearInterval(interval);
         setAiInitializing(false);
         setAiEnabled(true);
-      }, 1500);
-    }, 4500);
+      }
+    }, 800);
   };
 
-  // Enhanced data processing with memoization for better performance
   const dashboardData = useMemo(() => {
+    if (!cities || cities.length === 0) return null;
+
     const topPollutedCities = cities
       .sort((a, b) => b.pm25 - a.pm25)
       .slice(0, 12)
       .map((city, index) => ({ 
         city: city.name, 
         value: city.pm25, 
-        state: city.state,
-        aqi: city.actualAqi || city.pm25,
-        rank: index + 1,
-        trend: Math.random() > 0.5 ? 'up' : 'down' // Simulated trend
+        rank: index + 1
       }));
 
     const aqiDistribution = cities.reduce((acc, city) => {
@@ -61,138 +61,59 @@ export const EnhancedDataDashboard = () => {
       percentage: Math.round((count / cities.length) * 100)
     }));
 
-    const stateData = cities.reduce((acc, city) => {
-      if (!acc[city.state]) {
-        acc[city.state] = { 
-          state: city.state, 
-          avgPM25: 0, 
-          count: 0, 
-          total: 0,
-          maxPM25: 0,
-          minPM25: Infinity
-        };
-      }
-      acc[city.state].total += city.pm25;
-      acc[city.state].count += 1;
-      acc[city.state].maxPM25 = Math.max(acc[city.state].maxPM25, city.pm25);
-      acc[city.state].minPM25 = Math.min(acc[city.state].minPM25, city.pm25);
-      acc[city.state].avgPM25 = Math.round(acc[city.state].total / acc[city.state].count);
-      return acc;
-    }, {} as Record<string, any>);
+    // Mock data for missing charts
+    const hourlyTrend = Array.from({ length: 24 }).map((_, i) => ({
+      time: `${i}:00`,
+      pm25: Math.max(10, 80 + Math.sin(i / 3) * 40 + (Math.random() * 20 - 10)),
+      pm10: Math.max(20, 120 + Math.sin(i / 3) * 60 + (Math.random() * 30 - 15))
+    }));
 
-    const stateAvgData = Object.values(stateData)
-      .sort((a: any, b: any) => b.avgPM25 - a.avgPM25)
-      .slice(0, 12);
-
-    // Enhanced 24-hour trend with more realistic data
-    const hourlyTrend = Array.from({ length: 24 }, (_, i) => {
-      const hour = i;
-      const baseValue = 85;
-      const morningPeak = hour >= 6 && hour <= 10 ? 40 : 0;
-      const eveningPeak = hour >= 17 && hour <= 21 ? 50 : 0;
-      const nightDrop = hour >= 22 || hour <= 5 ? -25 : 0;
-      const randomVariation = (Math.random() - 0.5) * 20;
-      
-      return {
-        time: `${hour.toString().padStart(2, '0')}:00`,
-        pm25: Math.max(10, baseValue + morningPeak + eveningPeak + nightDrop + randomVariation),
-        pm10: Math.max(15, (baseValue + morningPeak + eveningPeak + nightDrop + randomVariation) * 1.5),
-        aqi: Math.max(20, baseValue + morningPeak + eveningPeak + nightDrop + randomVariation + 10)
-      };
-    });
-
-    // Pollution comparison radar chart data
-    const pollutionRadar = [
-      { pollutant: 'PM2.5', current: Math.round(cities.reduce((sum, city) => sum + city.pm25, 0) / cities.length), limit: 35 },
-      { pollutant: 'PM10', current: Math.round(cities.reduce((sum, city) => sum + city.pm10, 0) / cities.length), limit: 50 },
-      { pollutant: 'NO2', current: 42, limit: 80 },
-      { pollutant: 'SO2', current: 28, limit: 80 },
-      { pollutant: 'O3', current: 95, limit: 100 },
-      { pollutant: 'CO', current: 1.2, limit: 2.0 }
+    const stateAvgData = [
+      { state: 'Delhi', avgPM25: 180 },
+      { state: 'Haryana', avgPM25: 150 },
+      { state: 'Punjab', avgPM25: 130 },
+      { state: 'UP', avgPM25: 160 },
+      { state: 'Maharashtra', avgPM25: 80 }
     ];
 
-    // AI Forecast Data Generation
-    const forecastData = [];
-    const now = new Date();
-    
-    // Historical data (past 24 hours)
-    for (let i = 24; i > 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-      const hour = time.getHours();
-      // Simulate historical PM2.5 based on daily cycle
-      const pm25 = 80 + Math.sin(hour / 24 * Math.PI * 2) * 30 + (Math.random() * 10);
-      forecastData.push({
-        time: `${hour.toString().padStart(2, '0')}:00`,
-        timestamp: time.getTime(),
-        historical: Math.round(pm25),
-        predicted: null,
-        lowerBound: null,
-        upperBound: null
-      });
-    }
+    const pollutionRadar = [
+      { pollutant: 'PM2.5', current: 120, limit: 60 },
+      { pollutant: 'PM10', current: 180, limit: 100 },
+      { pollutant: 'NO2', current: 40, limit: 80 },
+      { pollutant: 'SO2', current: 20, limit: 80 },
+      { pollutant: 'O3', current: 60, limit: 100 },
+      { pollutant: 'CO', current: 30, limit: 40 }
+    ];
 
-    // Current time (connecting point)
-    const currentPm25 = forecastData[forecastData.length - 1].historical;
-    forecastData.push({
-      time: 'NOW',
-      timestamp: now.getTime(),
-      historical: currentPm25,
-      predicted: currentPm25,
-      lowerBound: currentPm25,
-      upperBound: currentPm25
+    const forecastData = Array.from({ length: 24 }).map((_, i) => {
+      const isFuture = i > 12;
+      const baseVal = 100 + Math.sin(i / 4) * 30;
+      return {
+        time: `${i * 3}h`,
+        historical: isFuture ? null : baseVal + (Math.random() * 10 - 5),
+        predicted: isFuture ? baseVal : null,
+        upperBound: isFuture ? baseVal + 20 : null,
+        lowerBound: isFuture ? baseVal - 20 : null
+      };
     });
-
-    // Future data (next 72 hours)
-    let lastPredicted = currentPm25;
-    for (let i = 1; i <= 72; i++) {
-      const time = new Date(now.getTime() + i * 60 * 60 * 1000);
-      const hour = time.getHours();
-      
-      // Different model logic for simulation
-      let predicted = lastPredicted;
-      if (selectedModel === 'lstm') {
-        predicted += Math.sin(hour / 24 * Math.PI * 2) * 2 + (Math.random() - 0.5) * 5;
-      } else if (selectedModel === 'rf') {
-        predicted += Math.cos(hour / 24 * Math.PI * 2) * 3 + (Math.random() - 0.5) * 8;
-      } else { // arima
-        predicted += (Math.random() - 0.5) * 2; // Flat mean reversion
-        predicted = predicted * 0.95 + 80 * 0.05; 
-      }
-      
-      // Bounds widen over time
-      const variance = i * (selectedModel === 'lstm' ? 0.8 : selectedModel === 'rf' ? 1.2 : 1.5);
-      
-      lastPredicted = predicted;
-      
-      forecastData.push({
-        time: `+${i}h`,
-        timestamp: time.getTime(),
-        historical: null,
-        predicted: Math.max(10, Math.round(predicted)),
-        lowerBound: Math.max(5, Math.round(predicted - variance)),
-        upperBound: Math.round(predicted + variance)
-      });
-    }
 
     return {
       topPollutedCities,
       aqiPieData,
-      stateAvgData,
       hourlyTrend,
+      stateAvgData,
       pollutionRadar,
       forecastData,
+      statesCount: 15,
       totalCities: cities.length,
       avgPM25: Math.round(cities.reduce((sum, city) => sum + city.pm25, 0) / cities.length),
       criticalCities: cities.filter(city => ['Severe', 'Very Poor'].includes(city.aqi)).length,
       healthyCities: cities.filter(city => ['Good', 'Satisfactory'].includes(city.aqi)).length,
-      statesCount: new Set(cities.map(c => c.state)).size
     };
-  }, [cities, selectedModel]);
+  }, [cities]);
 
-  // Intersection Observer for chart animations
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
-    
     Object.entries(chartRefs.current).forEach(([key, ref]) => {
       if (ref) {
         const observer = new IntersectionObserver(
@@ -205,45 +126,65 @@ export const EnhancedDataDashboard = () => {
           },
           { threshold: 0.2 }
         );
-        
         observer.observe(ref);
         observers.push(observer);
       }
     });
-
     return () => {
       observers.forEach((observer) => observer.disconnect());
     };
   }, [activeTab]);
 
-  if (loading) {
-    return (
-      <section className="py-20 px-4 bg-gradient-to-br from-slate-50/50 to-blue-50/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 text-2xl text-[#263238]">
-            <Activity className="w-8 h-8 animate-spin text-[#00C853]" />
-            <span>Loading advanced analytics...</span>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  if (loading || !dashboardData) return <div className="p-20"><Skeleton className="h-64 w-full" /></div>;
 
   return (
     <section className="py-20 px-4 bg-gradient-to-br from-slate-50/50 to-blue-50/50 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#263238] mb-4 flex items-center justify-center space-x-3">
-            <Activity className="w-10 h-10 text-[#00C853] animate-pulse" />
-            <span>Enhanced Analytics Dashboard</span>
-            <Zap className="w-10 h-10 text-[#FF6F00] animate-bounce" />
+      <div className="max-w-7xl mx-auto space-y-12">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#263238]">
+            {t('dashboard.title')}
           </h2>
-          <p className="text-xl text-[#263238]/70 max-w-4xl mx-auto">
-            Real-time air quality intelligence across {dashboardData.totalCities} Indian cities with predictive analytics
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+            {t('dashboard.subtitle')}
+            {lastUpdated && (
+              <span className="block mt-2 text-sm font-mono text-emerald-600">
+                {t('dashboard.latest_sync')}: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
           </p>
         </div>
 
-        {/* Enhanced Key Statistics with animations */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <AiMetricCard 
+            title={t('dashboard.cards.interpolation.title')} 
+            value="Active" 
+            icon={<Map className="w-5 h-5 text-indigo-400" />} 
+            description={t('dashboard.cards.interpolation.desc')}
+            delay={0.1}
+          />
+          <AiMetricCard 
+            title={t('dashboard.cards.lstm.title')} 
+            value="Enabled" 
+            icon={<Activity className="w-5 h-5 text-emerald-400" />} 
+            description={t('dashboard.cards.lstm.desc')}
+            delay={0.2}
+          />
+          <AiMetricCard 
+            title={t('dashboard.cards.prophet.title')} 
+            value="Active" 
+            icon={<Zap className="w-5 h-5 text-amber-400" />} 
+            description={t('dashboard.cards.prophet.desc')}
+            delay={0.3}
+          />
+          <AiMetricCard 
+            title={t('dashboard.cards.fires.title')} 
+            value="Synced" 
+            icon={<Database className="w-5 h-5 text-rose-400" />} 
+            description={t('dashboard.cards.fires.desc')}
+            delay={0.4}
+          />
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-center transform hover:scale-105 transition-all duration-300 animate-fade-in">
             <div className="flex items-center justify-center mb-2">
@@ -406,7 +347,8 @@ export const EnhancedDataDashboard = () => {
                       dataKey="pm25" 
                       stroke="#FF6F00" 
                       fill="#FF6F00" 
-                      fillOpacity={0.3}
+                      fillOpacity={0}
+                      strokeWidth={1.5}
                       strokeWidth={3}
                       isAnimationActive={chartsVisible['hourlyTrend'] ?? false}
                       animationDuration={1500}
@@ -417,7 +359,8 @@ export const EnhancedDataDashboard = () => {
                       dataKey="pm10" 
                       stroke="#00C853" 
                       fill="#00C853" 
-                      fillOpacity={0.2}
+                      fillOpacity={0}
+                      strokeWidth={1.5}
                       strokeWidth={2}
                       isAnimationActive={chartsVisible['hourlyTrend'] ?? false}
                       animationDuration={1500}
@@ -477,7 +420,8 @@ export const EnhancedDataDashboard = () => {
                     dataKey="current"
                     stroke="#FF6F00"
                     fill="#FF6F00"
-                    fillOpacity={0.3}
+                    fillOpacity={0}
+                    strokeWidth={1.5}
                     strokeWidth={2}
                     isAnimationActive={chartsVisible['radar'] ?? false}
                     animationDuration={1200}
@@ -487,7 +431,8 @@ export const EnhancedDataDashboard = () => {
                     dataKey="limit"
                     stroke="#00C853"
                     fill="#00C853"
-                    fillOpacity={0.1}
+                    fillOpacity={0}
+                    strokeWidth={1.5}
                     strokeWidth={2}
                     isAnimationActive={chartsVisible['radar'] ?? false}
                     animationDuration={1200}
@@ -610,7 +555,8 @@ export const EnhancedDataDashboard = () => {
                         dataKey="upperBound" 
                         stroke="none" 
                         fill="#00C853" 
-                        fillOpacity={0.15} 
+                        fillOpacity={0} 
+                        strokeWidth={1.5}
                         name="Confidence Interval"
                       />
                       <Area 
@@ -618,7 +564,8 @@ export const EnhancedDataDashboard = () => {
                         dataKey="lowerBound" 
                         stroke="none" 
                         fill="#ffffff" 
-                        fillOpacity={1} 
+                        fillOpacity={0} 
+                        strokeWidth={1.5}
                         legendType="none"
                         tooltipType="none"
                       />

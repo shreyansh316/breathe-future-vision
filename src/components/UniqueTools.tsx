@@ -305,38 +305,24 @@ export const UniqueTools = () => {
           ))}
         </Tabs>
 
-        {/* Multi-AI Integration Showcase */}
-        <Card className="p-8 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold text-[#263238] mb-4">Multi-AI Intelligence</h3>
-            <p className="text-[#263238]/70 max-w-2xl mx-auto">
-              Powered by the world's most advanced AI models for unprecedented accuracy
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-white/80 rounded-2xl">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <h4 className="font-bold text-[#263238] mb-2">ChatGPT Integration</h4>
-              <p className="text-sm text-[#263238]/70">Natural language processing for intuitive interactions</p>
+        {/* AakaashSetu NLP Engine Showcase */}
+        <Card className="p-8 bg-[#0B0F19] border border-[#1E293B] shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-white mb-3">AakaashSetu NLP Engine</h3>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-xl">
+                Proprietary natural language processing pipeline optimized for environmental telemetry and geospatial policy parsing. Embedded directly into our vector retrieval augmented generation loop.
+              </p>
             </div>
-            
-            <div className="text-center p-6 bg-white/80 rounded-2xl">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                <Target className="w-8 h-8 text-white" />
+            <div className="flex gap-4">
+              <div className="p-4 bg-[#1E293B]/50 rounded-xl border border-gray-800 text-center min-w-[120px]">
+                <div className="text-2xl font-mono text-emerald-400 font-bold">4.2</div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">MAE (µg/m³)</div>
               </div>
-              <h4 className="font-bold text-[#263238] mb-2">Gemini AI</h4>
-              <p className="text-sm text-[#263238]/70">Advanced reasoning for complex environmental analysis</p>
-            </div>
-            
-            <div className="text-center p-6 bg-white/80 rounded-2xl">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                <Smartphone className="w-8 h-8 text-white" />
+              <div className="p-4 bg-[#1E293B]/50 rounded-xl border border-gray-800 text-center min-w-[120px]">
+                <div className="text-2xl font-mono text-sky-400 font-bold">0.94</div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">R² Score</div>
               </div>
-              <h4 className="font-bold text-[#263238] mb-2">Copilot AI</h4>
-              <p className="text-sm text-[#263238]/70">Code assistance for custom environmental solutions</p>
             </div>
           </div>
         </Card>

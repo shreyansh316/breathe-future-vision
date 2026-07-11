@@ -49,11 +49,21 @@ export const PollutionMap = () => {
               </div>
               
               {/* Enhanced India Map */}
-              <EnhancedIndiaMap 
-                cities={cities}
-                selectedCity={selectedCity}
-                onCitySelect={setSelectedCity}
-              />
+              {loading ? (
+                <div className="h-[600px] w-full rounded-2xl bg-[#0B0F19] animate-pulse flex items-center justify-center border border-[#1E293B] shadow-inner relative overflow-hidden">
+                   <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay"></div>
+                   <div className="text-slate-500 font-mono text-sm uppercase tracking-widest flex items-center space-x-2 z-10">
+                     <Activity className="w-4 h-4 animate-bounce text-sky-500" /> 
+                     <span>Initializing WebGL Engine...</span>
+                  </div>
+                </div>
+              ) : (
+                <EnhancedIndiaMap 
+                  cities={cities}
+                  selectedCity={selectedCity}
+                  onCitySelect={setSelectedCity}
+                />
+              )}
               
               <div className="mt-4 text-xs text-center text-[#263238]/60">
                 Data source: World Air Quality Index (WAQI) | 

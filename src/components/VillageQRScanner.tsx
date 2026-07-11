@@ -11,8 +11,10 @@ export const VillageQRScanner = () => {
   const stickerRef = useRef<HTMLDivElement>(null);
   
   // Construct the deep link that the QR code will point to
-  // Uses window.location.origin so it works locally and when deployed
-  const qrData = `${window.location.origin}/lite/${villageCode}`;
+  // Point 86: Minify Dynamic QR Payload Data (Use short hashed UID)
+  // Encode the village code into a highly compressed base64-url-safe tracking ID
+  const trackingUid = btoa(villageCode).replace(/=/g, '').substring(0, 8);
+  const qrData = `${window.location.origin}/lite/${trackingUid}`;
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=000000`;
 
   const getLanguageInstruction = () => {

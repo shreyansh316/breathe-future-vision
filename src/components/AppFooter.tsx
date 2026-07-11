@@ -3,7 +3,7 @@ import { Instagram, Twitter, Linkedin, Youtube, Facebook, ArrowUpRight, Mail, Ma
 
 export const AppFooter = () => {
   return (
-    <footer className="w-full bg-[#121416] text-white border-t border-gray-800 flex flex-col md:flex-row relative z-50">
+    <footer className="w-full bg-[#121416] text-white border-t border-gray-800 flex flex-col md:flex-row relative z-50 pb-8 md:pb-0">
       
       {/* Left Column (25%) */}
       <div className="w-full md:w-1/4 bg-[#1a1d20] p-10 lg:p-16 border-r border-gray-800 flex flex-col justify-between">
@@ -111,7 +111,11 @@ export const AppFooter = () => {
         </div>
 
       </div>
-
+      
+      {/* VayuNet Footer Strip */}
+      <div className="absolute bottom-0 w-full py-2 text-center text-[10px] text-gray-600 tracking-[0.2em] bg-[#0a0f16] border-t border-white/5 uppercase">
+        Powered by VayuNet • Core Analytics Engine
+      </div>
     </footer>
   );
 };

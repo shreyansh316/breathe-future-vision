@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    # Point 98: Secure Environment Key Injection
+    # Injecting environment configurations at runtime to keep secrets out of the Docker image
+    environment:
+      - VITE_MAPLIBRE_API_KEY=${VITE_MAPLIBRE_API_KEY}
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-https://api.vayunet.in/v1}
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+
+  backend:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./backend:/app/backend
+      - ./requirements.txt:/app/requirements.txt
+    command: >
+      bash -c "pip install -r requirements.txt && uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+
+networks:
+  vayunet-net:
+    driver: bridge

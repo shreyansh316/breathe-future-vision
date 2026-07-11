@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { City } from '@/data/cities';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 
 interface CityComparisonProps {
   selectedCity: City;
@@ -32,45 +32,49 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
     return [selectedCity, ...neighbors];
   }, [selectedCity, allCities]);
 
-  // Prepare data for different pollutants
-  const pm25Data = neighboringCities.map(city => ({
+  // Point 96: Minimize Render Call Latencies (Memoize data transforms)
+  const pm25Data = useMemo(() => neighboringCities.map(city => ({
     name: city.name,
     PM2_5: city.pm25 || 0,
-  }));
+  })), [neighboringCities]);
 
-  const pm10Data = neighboringCities.map(city => ({
+  const pm10Data = useMemo(() => neighboringCities.map(city => ({
     name: city.name,
     PM10: city.pm10 || 0,
-  }));
+  })), [neighboringCities]);
 
-  const gaseousData = neighboringCities.map(city => ({
+  const gaseousData = useMemo(() => neighboringCities.map(city => ({
     name: city.name,
     NO2: city.no2 || 0,
     O3: city.o3 || 0,
     SO2: city.so2 || 0,
     CO: city.co || 0,
-  }));
+  })), [neighboringCities]);
 
-  const aqiData = neighboringCities.map(city => ({
+  const aqiData = useMemo(() => neighboringCities.map(city => ({
     name: city.name,
     AQI: city.actualAqi || 0,
-  }));
+  })), [neighboringCities]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  // Point 96: Minimize Render Call Latencies (Callback for Tooltip)
+  const CustomTooltip = useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
-          <p className="font-semibold text-foreground">{label}</p>
+        <div className="bg-[#0B0F19]/90 backdrop-blur-md border border-slate-800 p-4 rounded-xl shadow-2xl">
+          <p className="font-semibold text-white mb-2 pb-2 border-b border-slate-700/50">{label}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
+            <div key={index} className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
+              <p className="text-slate-300 text-sm font-mono">
+                {entry.name}: <span className="text-white font-bold">{entry.value}</span>
+              </p>
+            </div>
           ))}
         </div>
       );
     }
     return null;
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -94,7 +98,6 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={aqiData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="name" 
                 stroke="hsl(var(--foreground))"
@@ -106,7 +109,7 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ color: 'hsl(var(--foreground))' }} />
-              <Bar dataKey="AQI" fill="hsl(var(--primary))" />
+              <Bar dataKey="AQI" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -124,7 +127,6 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={pm25Data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="name" 
                   stroke="hsl(var(--foreground))"
@@ -138,7 +140,7 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
                   tick={{ fill: 'hsl(var(--foreground))' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="PM2_5" fill="hsl(var(--destructive))" />
+                <Bar dataKey="PM2_5" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -154,7 +156,6 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={pm10Data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="name" 
                   stroke="hsl(var(--foreground))"
@@ -168,7 +169,7 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
                   tick={{ fill: 'hsl(var(--foreground))' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="PM10" fill="hsl(var(--chart-2))" />
+                <Bar dataKey="PM10" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -186,7 +187,6 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={gaseousData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="name" 
                 stroke="hsl(var(--foreground))"
@@ -201,10 +201,10 @@ export const CityComparison = ({ selectedCity, allCities }: CityComparisonProps)
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ color: 'hsl(var(--foreground))' }} />
-              <Bar dataKey="NO2" fill="hsl(var(--chart-3))" />
-              <Bar dataKey="O3" fill="hsl(var(--chart-4))" />
-              <Bar dataKey="SO2" fill="hsl(var(--chart-5))" />
-              <Bar dataKey="CO" fill="hsl(var(--accent))" />
+              <Bar dataKey="NO2" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="O3" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="SO2" fill="hsl(var(--chart-5))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="CO" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

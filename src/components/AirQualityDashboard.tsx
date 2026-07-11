@@ -81,21 +81,26 @@ export const AirQualityDashboard = () => {
                 <h3 className="text-3xl font-black text-amber-950 tracking-tight">Air Quality Index</h3>
                 <div className="flex items-center space-x-2 mt-1">
                   <span className="text-amber-800 font-medium">{selectedCity.toUpperCase()} Sensor Node</span>
-                  <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${isConnected ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                  <div className={`flex items-center space-x-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${isConnected ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <div className="relative flex h-2 w-2 items-center justify-center">
+                      {isConnected && (
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                      )}
+                      <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                    </div>
                     <span>{isConnected ? 'LIVE FEED' : 'CONNECTING...'}</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="text-7xl font-black text-amber-950 tracking-tighter transition-all duration-500">
+            <div className="text-7xl font-black text-amber-950 transition-all duration-500 font-mono tracking-tighter">
               {liveData.aqi}
             </div>
             
             <div className="flex space-x-6 text-sm font-medium text-amber-900">
-              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4" /> <span>PM2.5: {liveData.pm25} µg/m³</span></div>
-              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4 opacity-50" /> <span>PM10: {liveData.pm10} µg/m³</span></div>
+              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4" /> <span className="font-mono tracking-tighter">PM2.5: {liveData.pm25} µg/m³</span></div>
+              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4 opacity-50" /> <span className="font-mono tracking-tighter">PM10: {liveData.pm10} µg/m³</span></div>
             </div>
 
             {/* Linear Slider Scale */}
@@ -147,7 +152,7 @@ export const AirQualityDashboard = () => {
                 <div className="flex items-center space-x-4">
                   <Sun className="w-12 h-12 text-yellow-600 drop-shadow-md" />
                   <div>
-                    <div className="text-4xl font-light text-amber-950 transition-all duration-500">{liveData.temperature}°C</div>
+                    <div className="text-4xl font-light text-amber-950 transition-all duration-500 font-mono tracking-tighter">{liveData.temperature}°C</div>
                     <div className="text-sm font-semibold text-amber-800 uppercase tracking-wider">Mist</div>
                   </div>
                 </div>
@@ -157,17 +162,17 @@ export const AirQualityDashboard = () => {
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-amber-900/10">
                 <div className="text-center group/item hover:-translate-y-1 transition-transform">
                   <Droplets className="w-5 h-5 mx-auto text-amber-700 mb-1" />
-                  <div className="text-lg font-bold text-amber-950 transition-all duration-500">{liveData.humidity}%</div>
+                  <div className="text-lg font-bold text-amber-950 transition-all duration-500 font-mono tracking-tighter">{liveData.humidity}%</div>
                   <div className="text-[10px] uppercase font-bold text-amber-800/60">Humidity</div>
                 </div>
                 <div className="text-center border-l border-r border-amber-900/10 group/item hover:-translate-y-1 transition-transform">
                   <Wind className="w-5 h-5 mx-auto text-amber-700 mb-1" />
-                  <div className="text-lg font-bold text-amber-950">25.2</div>
+                  <div className="text-lg font-bold text-amber-950 font-mono tracking-tighter">25.2</div>
                   <div className="text-[10px] uppercase font-bold text-amber-800/60">Wind km/h</div>
                 </div>
                 <div className="text-center group/item hover:-translate-y-1 transition-transform">
                   <Sun className="w-5 h-5 mx-auto text-amber-700 mb-1 opacity-80" />
-                  <div className="text-lg font-bold text-amber-950">6.4</div>
+                  <div className="text-lg font-bold text-amber-950 font-mono tracking-tighter">6.4</div>
                   <div className="text-[10px] uppercase font-bold text-amber-800/60">UV Index</div>
                 </div>
               </div>
@@ -230,7 +235,10 @@ export const AirQualityDashboard = () => {
               >
                 <span className="text-[10px] sm:text-xs text-gray-400 font-medium w-full text-left">{day.day} May</span>
                 {day.isFuture ? (
-                  <div className="w-full flex-1 flex items-center justify-center text-gray-600 font-mono">--</div>
+                  <div 
+                    className="w-full flex-1 flex items-center justify-center rounded-lg bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(255,255,255,0.05)_2px,rgba(255,255,255,0.05)_4px)] cursor-help"
+                    title="Data Pending Inversion"
+                  ></div>
                 ) : (
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-lg ${day.colorClass} group-hover:ring-4 ring-black/20 transition-all`}>
                     {day.aqi}

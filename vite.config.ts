@@ -43,4 +43,18 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Point 92: Implement Webpack/Vite Bundle Anonymization
+  build: {
+    sourcemap: false, // Completely strip out development paths and source mappings
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Strip away internal code comments and logs
+        drop_debugger: true,
+      },
+      format: {
+        comments: false,
+      }
+    }
+  }
 }));

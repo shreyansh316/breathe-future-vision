@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, User, ArrowUpRight, Search, Menu, X, CloudSun, ChevronDown, LocateFixed } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const GlobalHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -66,12 +67,7 @@ export const GlobalHeader = () => {
 
         {/* Right Settings & CTA */}
         <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-          <button className="flex items-center gap-1.5 bg-[#1f2327] hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 transition-colors text-xs lg:text-sm">
-            <span className="text-base">🇺🇸</span> <span className="text-gray-300 font-medium">AQI-US</span> <ChevronDown className="w-3 h-3 text-gray-500" />
-          </button>
-          <button className="flex items-center gap-1.5 bg-[#1f2327] hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 transition-colors text-xs lg:text-sm">
-            <span className="text-base">🇮🇳</span> <span className="text-gray-300 font-medium">English-IN</span> <ChevronDown className="w-3 h-3 text-gray-500" />
-          </button>
+          <LanguageSwitcher />
           
           <button className="text-gray-400 hover:text-yellow-400 p-1 transition-colors">
             <CloudSun className="w-5 h-5" />

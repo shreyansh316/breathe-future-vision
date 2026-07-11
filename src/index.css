@@ -101,15 +101,14 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
   .glass-panel {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    @apply bg-[#0a0f16]/80 backdrop-blur-md border border-white/10 shadow-2xl;
   }
 
   .interactive-element {
@@ -118,5 +117,39 @@ All colors MUST be HSL.
   .interactive-element:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Leaflet Map Dark UI Overrides (Point 10 & 12) */
+  .leaflet-container {
+    background: #0B0F19 !important;
+  }
+  .leaflet-bar {
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  }
+  .leaflet-bar a {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    transition: all 0.3s ease !important;
+  }
+  .leaflet-bar a:hover {
+    background-color: rgba(30, 41, 59, 0.95) !important;
+    color: #fff !important;
+  }
+  .leaflet-popup-content-wrapper {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  }
+  .leaflet-popup-tip {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+  }
+  .leaflet-interactive {
+    transition: all 0.3s ease !important;
   }
 }

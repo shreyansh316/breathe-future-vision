@@ -1,17 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { ShieldAlert, Bell, Info, XCircle, Activity, Wind } from 'lucide-react';
+import { ShieldAlert, Bell, Info, XCircle, Activity, Wind, Volume2, VolumeX, AlertOctagon } from 'lucide-react';
 import { VayuGuardAlert } from '@/hooks/useVayuGuard';
+import { Button } from '@/components/ui/button';
+
+// A short, high-pitched "Emergency Beep" sound encoded in Base64 so we don't need external assets
+const ALARM_SOUND_BASE64 = "data:audio/wav;base64,UklGRn4AAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YVoAAAAAEADg//3/g/8CAND/5//x/+n/6v/h/+P/2v/T/8//xv/E/7v/uP+x/6n/pf+h/5n/lf+O/4n/hP9+/3v/df9x/2z/aP9k/1//XP9Y/1T/Uv9P/0z/Sf9H/0T/Qf8=";
 
 interface VayuGuardAlertsProps {
   alertHistory: VayuGuardAlert[];
   onClear: () => void;
+  onTestAlarm?: () => void; // Optional test trigger
 }
 
-export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps) => {
+export const VayuGuardAlerts = ({ alertHistory, onClear, onTestAlarm }: VayuGuardAlertsProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [activeEmergency, setActiveEmergency] = useState<VayuGuardAlert | null>(null);
+  
+  const previousAlertCount = useRef(alertHistory.length);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const unreadCount = alertHistory.length;
+
+  // Initialize audio
+  useEffect(() => {
+    audioRef.current = new Audio(ALARM_SOUND_BASE64);
+    audioRef.current.loop = true; // Loop until dismissed
+  }, []);
+
+  // Monitor for new alerts
+  useEffect(() => {
+    if (alertHistory.length > previousAlertCount.current) {
+      const latestAlert = alertHistory[0]; // newest is at index 0
+      
+      // If it's a CRITICAL alert, trigger the emergency protocol
+      if (latestAlert && latestAlert.type === 'CRITICAL_AQI') {
+        setActiveEmergency(latestAlert);
+        if (!isMuted && audioRef.current) {
+          audioRef.current.play().catch(e => console.warn('Audio play blocked by browser. User interaction needed.', e));
+        }
+      }
+    }
+    previousAlertCount.current = alertHistory.length;
+  }, [alertHistory, isMuted]);
+
+  const dismissEmergency = () => {
+    setActiveEmergency(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  };
 
   const getAlertIcon = (type: VayuGuardAlert['type']) => {
     switch (type) {
@@ -31,6 +71,27 @@ export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps)
 
   return (
     <>
+      {/* Emergency Full-Screen Overlay */}
+      {activeEmergency && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-red-900/80 backdrop-blur-md animate-pulse">
+          <div className="bg-red-50 border-4 border-red-600 rounded-2xl p-8 max-w-lg text-center shadow-2xl animate-scale-in">
+            <AlertOctagon className="w-24 h-24 text-red-600 mx-auto mb-6 animate-bounce" />
+            <h1 className="text-4xl font-black text-red-700 mb-4 uppercase tracking-wider">
+              CRITICAL ALERT
+            </h1>
+            <p className="text-xl font-bold text-gray-900 mb-2">{activeEmergency.title}</p>
+            <p className="text-md text-red-800 mb-8">{activeEmergency.message}</p>
+            
+            <Button 
+              onClick={dismissEmergency}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-6 px-12 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-lg w-full"
+            >
+              ACKNOWLEDGE ALARM
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Floating Action Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
@@ -57,9 +118,18 @@ export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps)
               <ShieldAlert className="w-6 h-6 text-red-500" />
               <h2 className="font-bold text-lg">VayuGuard System</h2>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors">
-              <XCircle className="w-6 h-6" />
-            </button>
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setIsMuted(!isMuted)} 
+                className={`p-1.5 rounded-full transition-colors ${isMuted ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}
+                title={isMuted ? "Unmute Alarms" : "Mute Alarms"}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
           </div>
           
           <div className="p-3 bg-gray-100 border-b border-gray-200 flex justify-between items-center text-xs text-gray-500 font-medium">
@@ -67,9 +137,14 @@ export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps)
               <Bell className="w-3 h-3" />
               <span>National AI Alert Log</span>
             </div>
-            {unreadCount > 0 && (
-              <button onClick={onClear} className="text-blue-600 hover:underline">Clear History</button>
-            )}
+            <div className="flex space-x-2">
+              {onTestAlarm && (
+                 <button onClick={onTestAlarm} className="text-red-600 font-bold hover:underline">Test Alarm</button>
+              )}
+              {unreadCount > 0 && (
+                <button onClick={onClear} className="text-blue-600 hover:underline">Clear</button>
+              )}
+            </div>
           </div>
 
           {/* Scrollable Alert List */}
@@ -110,7 +185,7 @@ export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps)
       </div>
       
       {/* Backdrop */}
-      {isOpen && (
+      {isOpen && !activeEmergency && (
         <div 
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[998] sm:hidden" 
           onClick={() => setIsOpen(false)}
@@ -119,3 +194,4 @@ export const VayuGuardAlerts = ({ alertHistory, onClear }: VayuGuardAlertsProps)
     </>
   );
 };
+

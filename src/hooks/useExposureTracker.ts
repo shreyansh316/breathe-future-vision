@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export interface ExposureData {
   currentPM25: number;
@@ -9,59 +9,83 @@ export interface ExposureData {
   safeHoursRemaining: number;
 }
 
+const STORAGE_KEY = 'janaqi_exposure_data';
+const DAILY_LIMIT = 360; // Daily WHO safe limit is roughly 15 ug/m3 * 24 hours
+
+const defaultData: ExposureData = {
+  currentPM25: 45,
+  cumulativeExposure: 0,
+  timeTracked: 0,
+  badges: ['Early Bird'],
+  healthStatus: 'Good',
+  safeHoursRemaining: 24,
+};
+
 export const useExposureTracker = () => {
-  const [exposure, setExposure] = useState<ExposureData>({
-    currentPM25: 45, // Default/Mock value
-    cumulativeExposure: 0,
-    timeTracked: 0,
-    badges: ['Early Bird'],
-    healthStatus: 'Good',
-    safeHoursRemaining: 24,
+  const [exposure, setExposure] = useState<ExposureData>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not load exposure data from local storage', e);
+    }
+    return defaultData;
   });
 
   const [isTracking, setIsTracking] = useState(false);
   const [location, setLocation] = useState<{lat: number, lon: number} | null>(null);
   
-  // Daily WHO safe limit is roughly 15 ug/m3 * 24 hours = 360 cumulative exposure limit
-  const DAILY_LIMIT = 360; 
+  const watchIdRef = useRef<number | null>(null);
+
+  // Auto-save to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(exposure));
+    } catch (e) {
+      console.warn('Could not save exposure data to local storage', e);
+    }
+  }, [exposure]);
 
   const startTracking = () => {
+    setIsTracking(true);
     if ("geolocation" in navigator) {
-      setIsTracking(true);
-      navigator.geolocation.getCurrentPosition(
+      // Use watchPosition for real-time tracking
+      watchIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
           setLocation({
             lat: position.coords.latitude,
             lon: position.coords.longitude
           });
-          // In a real app, we would fetch the nearest PM2.5 from VayuNet API based on lat/lon
+          // In a real app, fetch nearby AQI node from VayuNet based on lat/lon
         },
         (error) => {
           console.error("Error getting location:", error);
-          // Fallback to mock tracking
-        }
+        },
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
       );
-    } else {
-      setIsTracking(true); // Fallback mock
     }
   };
 
   const stopTracking = () => {
     setIsTracking(false);
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
   };
 
-  // Simulate tracking loop
+  // Tracking loop
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     if (isTracking) {
       interval = setInterval(() => {
         setExposure(prev => {
-          // Simulate wandering into different pollution zones
+          // Simulate dynamic AQI based on movement (random walk)
           const fluctuation = Math.random() > 0.5 ? 5 : -5;
           const newPM25 = Math.max(10, Math.min(300, prev.currentPM25 + fluctuation));
           
-          // Add PM2.5 exposure for this minute (pm25 * 1 minute / 60 minutes)
+          // Calculate exposure (1 sec real = 1 min simulated for demo)
           const exposureThisMinute = newPM25 / 60;
           const newCumulative = prev.cumulativeExposure + exposureThisMinute;
           const newTimeTracked = prev.timeTracked + 1;
@@ -72,11 +96,9 @@ export const useExposureTracker = () => {
           else if (newPM25 > 100) status = 'Poor';
           else if (newPM25 > 50) status = 'Fair';
           
-          // Calculate safe hours remaining
           const remainingExposure = DAILY_LIMIT - newCumulative;
           const safeHoursRemaining = remainingExposure > 0 ? (remainingExposure / newPM25) : 0;
           
-          // Give badges
           const newBadges = [...prev.badges];
           if (newCumulative < 50 && newTimeTracked > 60 && !newBadges.includes('Clean Lungs')) {
             newBadges.push('Clean Lungs');
@@ -95,10 +117,15 @@ export const useExposureTracker = () => {
             badges: newBadges
           };
         });
-      }, 1000); // 1 real second = 1 minute simulated time for demo purposes
+      }, 1000);
     }
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (!isTracking && watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, [isTracking]);
 
   return { exposure, isTracking, startTracking, stopTracking, location };

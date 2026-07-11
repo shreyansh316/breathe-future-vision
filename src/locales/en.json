@@ -1,0 +1,36 @@
+{
+  "dashboard": {
+    "title": "AakaashSetu NLP Engine",
+    "subtitle": "Live telemetry fused with ISRO satellite data to deliver hyper-local, actionable spatial intelligence.",
+    "latest_sync": "LATEST SYNC",
+    "search": {
+      "title": "Semantic Spatial Search",
+      "placeholder": "e.g., 'Show me agricultural burning impact near Punjab over the last 48 hours'",
+      "suggested": "Suggested queries:"
+    },
+    "cards": {
+      "interpolation": {
+        "title": "Spatial Interpolation",
+        "desc": "Fusing OpenAQ ground sensors with satellite raster data for rural estimation."
+      },
+      "lstm": {
+        "title": "LSTM Predictor",
+        "desc": "Short-term (1-24 hr) PM2.5 spike prediction using recurring neural networks."
+      },
+      "prophet": {
+        "title": "Prophet Engine",
+        "desc": "Seasonal and weekly trend forecasting across 7,900+ municipalities."
+      },
+      "fires": {
+        "title": "Stubble Fire DB",
+        "desc": "Real-time thermal anomaly ingestion for AgroClean modules."
+      }
+    }
+  },
+  "pwa": {
+    "install_title": "Install JanAQI App",
+    "install_desc": "Get live air quality alerts and offline maps on your home screen.",
+    "install_btn": "Install Now",
+    "dismiss": "Not right now"
+  }
+}

@@ -51,7 +51,7 @@ export const SmartSearchBar = () => {
         <Input
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder="Ask AakaashSetu AI: 'Air quality in my area', 'Health tips for today'..."
+          placeholder="Search by coordinate, city, or district..."
           className="pl-12 pr-20 py-4 text-lg bg-white/90 backdrop-blur-sm border-2 border-[#00C853]/20 focus:border-[#00C853] rounded-2xl shadow-lg"
         />
         <Button 
