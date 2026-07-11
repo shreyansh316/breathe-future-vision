@@ -25,10 +25,12 @@ export const IndiaMap = ({ cities, selectedCity, onCitySelect }: IndiaMapProps) 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mapDimensions, setMapDimensions] = useState({ width: 500, height: 400 });
 
-  const citiesWithPositions = cities.map(city => ({
-    ...city,
-    position: cityPositions[city.name as keyof typeof cityPositions] || { x: 0.5, y: 0.5 }
-  }));
+  const citiesWithPositions = React.useMemo(() => {
+    return cities.map(city => ({
+      ...city,
+      position: cityPositions[city.name as keyof typeof cityPositions] || { x: 0.5, y: 0.5 }
+    }));
+  }, [cities]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,14 +39,18 @@ export const IndiaMap = ({ cities, selectedCity, onCitySelect }: IndiaMapProps) 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let timeoutId: ReturnType<typeof setTimeout>;
     const handleResize = () => {
-      const container = canvas.parentElement;
-      if (container) {
-        const containerWidth = container.clientWidth;
-        const width = Math.min(containerWidth - 32, 600);
-        const height = width * 0.8;
-        setMapDimensions({ width, height });
-      }
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const container = canvas.parentElement;
+        if (container) {
+          const containerWidth = container.clientWidth;
+          const width = Math.min(containerWidth - 32, 600);
+          const height = width * 0.8;
+          setMapDimensions({ width, height });
+        }
+      }, 150); // Point 54: Debounce heavy UI operations
     };
 
     handleResize();

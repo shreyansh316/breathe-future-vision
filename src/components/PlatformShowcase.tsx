@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Monitor, Smartphone, LayoutGrid, Terminal, Boxes, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const tabs = [
   { id: 'mobile', label: 'Mobile App', icon: Smartphone },
@@ -15,35 +16,45 @@ const platformData = {
     headline: 'Empower Your Decisions with Reliable Data',
     image: '/assets/mobile_app_aqi.png',
     primaryButton: 'App Store ↗',
-    secondaryButton: 'Google Play ↗'
+    primaryLink: 'https://apps.apple.com/in/app/aqi/id1439684571',
+    secondaryButton: 'Google Play ↗',
+    secondaryLink: 'https://play.google.com/store/apps/details?id=com.aqi.data'
   },
   tv: {
     tag: 'SMART TV APP',
     headline: 'AQI Data Monitoring on the Big Screen',
     image: '/assets/smart_tv_aqi.png',
     primaryButton: 'Download TV App ↗',
-    secondaryButton: null
+    primaryLink: 'https://aqi.app/',
+    secondaryButton: null,
+    secondaryLink: null
   },
   web: {
     tag: 'WEB DASHBOARD',
     headline: 'Stay informed with real-time geographic telemetry',
     image: '/assets/web_dashboard_aqi.png',
     primaryButton: 'View Dashboard ↗',
-    secondaryButton: null
+    primaryLink: '#',
+    secondaryButton: null,
+    secondaryLink: null
   },
   api: {
     tag: 'API',
     headline: 'Easy Air Quality API Integration: Connect Instantly!',
     image: '/assets/api_developer_aqi.png',
     primaryButton: 'Get APIs ↗',
-    secondaryButton: 'Read Docs ↗'
+    primaryLink: '/api-contact',
+    secondaryButton: 'Read Docs ↗',
+    secondaryLink: '#'
   },
   widgets: {
     tag: 'WIDGETS',
     headline: 'Free AQI Widgets: Real-Time Air Quality for your Site',
     image: '/assets/widgets_aqi.png',
     primaryButton: 'Get Widgets ↗',
-    secondaryButton: null
+    primaryLink: '/widgets',
+    secondaryButton: null,
+    secondaryLink: null
   }
 };
 
@@ -122,14 +133,38 @@ export const PlatformShowcase = () => {
               </h2>
               
               <div className="flex flex-wrap gap-4 mt-auto">
-                <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] flex items-center gap-2">
-                  {currentContent.primaryButton}
-                </button>
+                {currentContent.primaryLink ? (
+                  currentContent.primaryLink.startsWith('http') ? (
+                    <a href={currentContent.primaryLink} target="_blank" rel="noopener noreferrer" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] flex items-center gap-2">
+                      {currentContent.primaryButton}
+                    </a>
+                  ) : (
+                    <Link to={currentContent.primaryLink} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] flex items-center gap-2">
+                      {currentContent.primaryButton}
+                    </Link>
+                  )
+                ) : (
+                  <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] flex items-center gap-2">
+                    {currentContent.primaryButton}
+                  </button>
+                )}
                 
                 {currentContent.secondaryButton && (
-                  <button className="bg-transparent hover:bg-white/5 border-2 border-gray-700 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all flex items-center gap-2">
-                    {currentContent.secondaryButton}
-                  </button>
+                  currentContent.secondaryLink ? (
+                    currentContent.secondaryLink.startsWith('http') ? (
+                      <a href={currentContent.secondaryLink} target="_blank" rel="noopener noreferrer" className="bg-transparent hover:bg-white/5 border-2 border-gray-700 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all flex items-center gap-2">
+                        {currentContent.secondaryButton}
+                      </a>
+                    ) : (
+                      <Link to={currentContent.secondaryLink} className="bg-transparent hover:bg-white/5 border-2 border-gray-700 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all flex items-center gap-2">
+                        {currentContent.secondaryButton}
+                      </Link>
+                    )
+                  ) : (
+                    <button className="bg-transparent hover:bg-white/5 border-2 border-gray-700 text-white px-8 py-3.5 rounded-xl font-bold tracking-wide transition-all flex items-center gap-2">
+                      {currentContent.secondaryButton}
+                    </button>
+                  )
                 )}
               </div>
             </div>

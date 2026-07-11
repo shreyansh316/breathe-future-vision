@@ -1,0 +1,72 @@
+# Point 68: Master Docker Compose Blueprint
+# Networks the Frontend, Backend, Redis Queue, and TimescaleDB layers
+
+version: '3.8'
+
+services:
+  # Frontend NGINX Delivery
+  frontend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - vayunet_network
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vayunet_user:securepassword@timescaledb:5432/vayunet_db
+      - REDIS_URL=redis://redis_broker:6379/0
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis_broker:
+        condition: service_started
+    networks:
+      - vayunet_network
+
+  # High-Performance TimescaleDB/PostGIS Database
+  timescaledb:
+    image: timescale/timescaledb-ha:pg14-latest
+    environment:
+      - POSTGRES_DB=vayunet_db
+      - POSTGRES_USER=vayunet_user
+      - POSTGRES_PASSWORD=securepassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vayunet_user -d vayunet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vayunet_network
+
+  # Redis for Background ML Queue / Async Tasks
+  redis_broker:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vayunet_network
+
+networks:
+  vayunet_network:
+    driver: bridge
+
+volumes:
+  timescaledb_data:
+  redis_data:

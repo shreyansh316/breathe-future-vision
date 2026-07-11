@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Globe, User, ArrowUpRight, Search, Menu, X, CloudSun, ChevronDown, LocateFixed } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { RankingMegaMenu } from './RankingMegaMenu';
+import { ProductsMegaMenu } from './ProductsMegaMenu';
+import { ResourcesMegaMenu } from './ResourcesMegaMenu';
 
 export const GlobalHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,6 +26,32 @@ export const GlobalHeader = () => {
   useEffect(() => {
     // Dispatch event to update SubNavigation
     window.dispatchEvent(new CustomEvent('update-location', { detail: { location: 'Mumbai, India' } }));
+
+    // Phase 1 Security: Listen for Supabase Auth changes and sync with Backend HTTPOnly Cookie
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          await fetch('http://localhost:5000/api/v2/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: session.access_token })
+          });
+          console.log("Secure HTTPOnly session established with backend.");
+        } catch (error) {
+          console.error("Failed to establish secure backend session:", error);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        try {
+          await fetch('http://localhost:5000/api/v2/auth/logout', { method: 'POST' });
+        } catch (error) {
+          console.error("Failed to clear backend session:", error);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -54,14 +83,17 @@ export const GlobalHeader = () => {
 
         {/* Center Links */}
         <div className="flex items-center gap-6 text-sm font-medium text-gray-300">
-          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors">
+          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors py-4">
             Ranking <ChevronDown className="w-3 h-3 text-gray-500 group-hover:text-white" />
+            <RankingMegaMenu />
           </div>
-          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors">
+          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors py-4">
             Products <ChevronDown className="w-3 h-3 text-gray-500 group-hover:text-white" />
+            <ProductsMegaMenu />
           </div>
-          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors">
+          <div className="relative group cursor-pointer hover:text-white flex items-center gap-1 transition-colors py-4">
             Resources <ChevronDown className="w-3 h-3 text-gray-500 group-hover:text-white" />
+            <ResourcesMegaMenu />
           </div>
         </div>
 

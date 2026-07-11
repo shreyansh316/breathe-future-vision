@@ -9,6 +9,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ComposedChart, Legend, ReferenceLine } from 'recharts';
 import { usePollutionData } from '@/hooks/usePollutionData';
 import { useTranslation } from 'react-i18next';
+import { D3MicroChart } from './D3MicroChart';
+
+// Generate mock historical PM2.5 data for the D3 chart
+const generateMockD3Data = () => {
+  return Array.from({ length: 24 }, () => Math.max(10, Math.min(300, 85 + (Math.random() * 40 - 20))));
+};
+const d3MockData = generateMockD3Data();
 
 export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) => {
   const { cities, loading } = usePollutionData();
@@ -330,6 +337,22 @@ export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) =
                 className="p-6 bg-white/90 backdrop-blur-sm border-white/50 shadow-xl animate-fade-in"
               >
                 <h3 className="text-xl font-bold text-[#263238] mb-4">24-Hour Pollution Trend</h3>
+                
+                {/* Advanced D3.js Micro-Trendline Overlay (Phase 4) */}
+                <div className="absolute top-6 right-6 flex flex-col items-end">
+                  <span className="text-xs font-semibold text-slate-500 mb-1">PM2.5 Micro-trend (D3.js)</span>
+                  <div className="bg-white/50 backdrop-blur-md rounded-lg p-2 border border-slate-200/50 shadow-sm">
+                    <D3MicroChart 
+                      data={d3MockData} 
+                      width={160} 
+                      height={40} 
+                      color="#DC143C" 
+                      fillOpacity={0.15} 
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                </div>
+
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={dashboardData.hourlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#263238" opacity={0.1} />
@@ -343,12 +366,9 @@ export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) =
                       }} 
                     />
                     <Area 
-                      type="monotone" 
-                      dataKey="pm25" 
-                      stroke="#FF6F00" 
-                      fill="#FF6F00" 
-                      fillOpacity={0}
-                      strokeWidth={1.5}
+                      type="monotone"
+                      dataKey="pm25"
+                      stroke="#ef4444"
                       strokeWidth={3}
                       isAnimationActive={chartsVisible['hourlyTrend'] ?? false}
                       animationDuration={1500}
@@ -360,7 +380,6 @@ export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) =
                       stroke="#00C853" 
                       fill="#00C853" 
                       fillOpacity={0}
-                      strokeWidth={1.5}
                       strokeWidth={2}
                       isAnimationActive={chartsVisible['hourlyTrend'] ?? false}
                       animationDuration={1500}
@@ -421,7 +440,6 @@ export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) =
                     stroke="#FF6F00"
                     fill="#FF6F00"
                     fillOpacity={0}
-                    strokeWidth={1.5}
                     strokeWidth={2}
                     isAnimationActive={chartsVisible['radar'] ?? false}
                     animationDuration={1200}
@@ -432,7 +450,6 @@ export const EnhancedDataDashboard = ({ lastUpdated }: { lastUpdated?: Date }) =
                     stroke="#00C853"
                     fill="#00C853"
                     fillOpacity={0}
-                    strokeWidth={1.5}
                     strokeWidth={2}
                     isAnimationActive={chartsVisible['radar'] ?? false}
                     animationDuration={1200}

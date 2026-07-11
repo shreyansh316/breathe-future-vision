@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Leaf, Droplets, Wind, Sun, ChevronRight, ChevronLeft, Calendar as CalendarIcon, ArrowUpRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBackendTelemetry } from '@/hooks/useBackendTelemetry';
@@ -94,13 +95,19 @@ export const AirQualityDashboard = () => {
               </div>
             </div>
             
-            <div className="text-7xl font-black text-amber-950 transition-all duration-500 font-mono tracking-tighter">
-              {liveData.aqi}
+            <div className="text-7xl font-black text-amber-950 transition-all duration-500 font-mono tracking-tighter h-24 flex items-center">
+              {isLoading ? <Skeleton className="h-16 w-32 bg-amber-900/10" /> : liveData.aqi}
             </div>
             
-            <div className="flex space-x-6 text-sm font-medium text-amber-900">
-              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4" /> <span className="font-mono tracking-tighter">PM2.5: {liveData.pm25} µg/m³</span></div>
-              <div className="flex items-center space-x-1"><Leaf className="w-4 h-4 opacity-50" /> <span className="font-mono tracking-tighter">PM10: {liveData.pm10} µg/m³</span></div>
+            <div className="flex space-x-6 text-sm font-medium text-amber-900 h-6">
+              <div className="flex items-center space-x-1">
+                <Leaf className="w-4 h-4" /> 
+                {isLoading ? <Skeleton className="h-4 w-24 bg-amber-900/10" /> : <span className="font-mono tracking-tighter">PM2.5: {liveData.pm25} µg/m³</span>}
+              </div>
+              <div className="flex items-center space-x-1">
+                <Leaf className="w-4 h-4 opacity-50" /> 
+                {isLoading ? <Skeleton className="h-4 w-24 bg-amber-900/10" /> : <span className="font-mono tracking-tighter">PM10: {liveData.pm10} µg/m³</span>}
+              </div>
             </div>
 
             {/* Linear Slider Scale */}

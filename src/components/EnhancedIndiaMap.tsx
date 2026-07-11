@@ -159,6 +159,38 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
     []
   );
 
+  // Cloud Optimized GeoTIFF (COG) Dynamic Architecture (Phase 2 Performance)
+  useEffect(() => {
+    // We only load the heavy GeoTIFF parser if the user toggles a high-res raster layer.
+    // This dynamic import ensures the initial bundle size stays small.
+    let isMounted = true;
+    
+    const initializeCogEngine = async () => {
+      try {
+        // Dynamic import of the geotiff library
+        const GeoTIFF = await import('geotiff');
+        if (isMounted) {
+          console.log('[COG Engine] Dynamic parser loaded successfully.');
+          /*
+           * Architecture Scaffold:
+           * 1. Fetch byte-ranges of the COG using GeoTIFF.fromUrl()
+           * 2. Read specific bounding boxes based on the current map viewport
+           * 3. Pass the raw raster array to a WebGL texture for zero-latency rendering
+           */
+        }
+      } catch (err) {
+        console.warn('[COG Engine] Failed to load GeoTIFF parser dynamically:', err);
+      }
+    };
+
+    if (mapStyle === SATELLITE_STYLE) {
+      // Trigger COG engine initialization when heavy raster analysis is needed
+      initializeCogEngine();
+    }
+
+    return () => { isMounted = false; };
+  }, [mapStyle]);
+
   // Debounced hover tooltips (Point 72)
   const handleHover = useMemo(
     () => debounce((features: any[], point: { x: number, y: number }) => {

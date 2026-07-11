@@ -4,35 +4,53 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: infrastructure/docker/Dockerfile.frontend
     ports:
-      - "80:80"
+      - "8080:8080"
     # Point 98: Secure Environment Key Injection
-    # Injecting environment configurations at runtime to keep secrets out of the Docker image
     environment:
       - VITE_MAPLIBRE_API_KEY=${VITE_MAPLIBRE_API_KEY}
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-https://api.vayunet.in/v1}
+      - VITE_BACKEND_URL=http://localhost:5000
     env_file:
-      - .env.production
+      - .env
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - vayunet-net
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
     restart: unless-stopped
     networks:
       - vayunet-net
 
-  backend:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - ./backend:/app/backend
-      - ./requirements.txt:/app/requirements.txt
-    command: >
-      bash -c "pip install -r requirements.txt && uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.2
     ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    env_file:
-      - .env.production
+      - "5001:5000"
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db
+    volumes:
+      - ./mlflow-data:/mlflow
     restart: unless-stopped
     networks:
       - vayunet-net

@@ -4,8 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Point 22: Preload critical typography to prevent FOUT/CLS -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" as="style" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Point 22: Maximum scale 5 ensures accessibility while preventing auto-zoom layout shifts on mobile inputs -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta name="theme-color" content="#00C853" />
     <title>VayuRakshak - Real-Time Satellite Intelligence</title>
     <meta name="description" content="VayuRakshak: India's advanced AI and satellite-driven air quality monitoring platform." />

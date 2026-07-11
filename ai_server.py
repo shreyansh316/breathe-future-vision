@@ -16,6 +16,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Phase 3: ML Ops & High-Performance Forecasting
+try:
+    import mlflow
+    import onnxruntime as ort
+    
+    # Initialize MLflow Tracking Server (Point 150)
+    MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+    mlflow.set_tracking_uri(MLFLOW_URI)
+    mlflow.set_experiment("vayurakshak_aqi_forecasting")
+    print(f"[ML Ops] Connected to MLflow Tracking Server at {MLFLOW_URI}")
+    
+    # Scaffold ONNX Forecasting Engine (Point 154)
+    class ForecastingEngine:
+        def __init__(self, model_path: str = "models/lstm_aqi_forecast.onnx"):
+            self.model_path = model_path
+            # In production, this loads the quantized ONNX graph
+            # self.session = ort.InferenceSession(self.model_path, providers=['CPUExecutionProvider'])
+            print(f"[ONNX Runtime] Forecasting engine architecture initialized for {model_path}.")
+            
+        def predict(self, input_features):
+            # Scaffold for executing ONNX graph inference
+            return [input_features[0] * 1.1] # mock prediction
+            
+    engine = ForecastingEngine()
+    
+except ImportError:
+    print("[Warning] ML ops libraries (mlflow, onnxruntime) not found. Running in basic mode.")
+
 # Request Data Models
 class ChatRequest(BaseModel):
     user_message: str

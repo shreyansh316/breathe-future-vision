@@ -1,24 +1,44 @@
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { QrCode, Printer, MapPin, Download, CheckCircle2 } from 'lucide-react';
+import { QrCode, Printer, MapPin, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+// Point 30: Form State Validation (Strict Zod Schema)
+const qrFormSchema = z.object({
+  villageName: z.string().min(3, "Village name must be at least 3 characters").max(50, "Village name is too long"),
+  villageCode: z.string().regex(/^[A-Z]{3}-\d{3}-[A-Z]{3}$/, "Must follow format: ABC-123-XYZ"),
+  language: z.enum(['en', 'hi', 'pa'])
+});
+
+type QRFormValues = z.infer<typeof qrFormSchema>;
 
 export const VillageQRScanner = () => {
-  const [villageCode, setVillageCode] = useState('PUN-104-VIL');
-  const [villageName, setVillageName] = useState('Rupnagar Panchayat');
-  const [language, setLanguage] = useState('en');
   const [isDownloading, setIsDownloading] = useState(false);
   const stickerRef = useRef<HTMLDivElement>(null);
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<QRFormValues>({
+    resolver: zodResolver(qrFormSchema),
+    defaultValues: {
+      villageName: 'Rupnagar Panchayat',
+      villageCode: 'PUN-104-VIL',
+      language: 'en'
+    }
+  });
+
+  const formData = watch();
   
   // Construct the deep link that the QR code will point to
   // Point 86: Minify Dynamic QR Payload Data (Use short hashed UID)
   // Encode the village code into a highly compressed base64-url-safe tracking ID
-  const trackingUid = btoa(villageCode).replace(/=/g, '').substring(0, 8);
+  const trackingUid = btoa(formData.villageCode).replace(/=/g, '').substring(0, 8);
   const qrData = `${window.location.origin}/lite/${trackingUid}`;
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&color=000000`;
 
   const getLanguageInstruction = () => {
-    switch(language) {
+    switch(formData.language) {
       case 'hi': return 'स्कैन करें - लाइव वायु गुणवत्ता';
       case 'pa': return 'ਸਕੈਨ ਕਰੋ - ਲਾਈਵ ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ';
       default: return 'SCAN FOR LIVE AIR QUALITY';
@@ -39,7 +59,7 @@ export const VillageQRScanner = () => {
       const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement('a');
       link.href = image;
-      link.download = `VayuRakshak_Sticker_${villageCode}.png`;
+      link.download = `VayuRakshak_Sticker_${formData.villageCode}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -62,31 +82,31 @@ export const VillageQRScanner = () => {
       </p>
       
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <div className="flex-1 space-y-4 w-full">
+        <form onSubmit={handleSubmit(handleDownload)} className="flex-1 space-y-4 w-full">
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">Village Name</label>
             <input 
               type="text" 
-              value={villageName}
-              onChange={(e) => setVillageName(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-sm font-medium"
+              {...register('villageName')}
+              className={`w-full p-2 border ${errors.villageName ? 'border-red-500' : 'border-gray-300'} rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-sm font-medium`}
             />
+            {errors.villageName && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1"/>{errors.villageName.message}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">Village UID</label>
               <input 
                 type="text" 
-                value={villageCode}
-                onChange={(e) => setVillageCode(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-sm font-mono text-gray-700"
+                {...register('villageCode')}
+                placeholder="ABC-123-XYZ"
+                className={`w-full p-2 border ${errors.villageCode ? 'border-red-500' : 'border-gray-300'} rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-sm font-mono text-gray-700`}
               />
+              {errors.villageCode && <p className="text-red-500 text-xs mt-1 flex items-center"><AlertCircle className="w-3 h-3 mr-1"/>{errors.villageCode.message}</p>}
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">Sticker Language</label>
               <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                {...register('language')}
                 className="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-sm font-medium bg-white"
               >
                 <option value="en">English (Default)</option>
@@ -97,9 +117,9 @@ export const VillageQRScanner = () => {
           </div>
           
           <button 
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className="flex items-center justify-center space-x-2 w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white p-3 rounded-lg transition-colors text-sm font-bold shadow-md mt-4"
+            type="submit"
+            disabled={isDownloading || Object.keys(errors).length > 0}
+            className="flex items-center justify-center space-x-2 w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors text-sm font-bold shadow-md mt-4"
           >
             {isDownloading ? (
               <span className="flex items-center space-x-2">
@@ -118,9 +138,9 @@ export const VillageQRScanner = () => {
             <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p><strong>Ready for Production:</strong> The downloaded sticker is high-resolution (300 DPI equivalent) and formatted for standard A6 or A5 label printers.</p>
           </div>
-        </div>
+        </form>
         
-        {/* Visual Sticker Preview Area */}
+        {/* Live Sticker Preview */}
         <div className="flex-1 flex flex-col items-center justify-center w-full bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
           
           {/* The actual printable sticker card */}
@@ -160,11 +180,19 @@ export const VillageQRScanner = () => {
 
             {/* Footer Location Details */}
             <div className="w-full bg-gray-900 p-3 mt-4 flex flex-col items-center justify-center text-center">
-              <div className="font-bold text-white text-base flex items-center justify-center">
-                <MapPin className="w-4 h-4 text-red-500 mr-1.5" />
-                {villageName}
+              {/* Panchayat Name */}
+              <div className="w-full px-6 text-center">
+                <h2 className="text-lg font-black text-white leading-tight break-words max-w-[200px] mx-auto">
+                  {formData.villageName || 'Village Name'}
+                </h2>
               </div>
-              <div className="text-[11px] text-gray-400 font-mono mt-1 font-bold tracking-widest">ID: {villageCode}</div>
+              
+              {/* VayuNet UID Label */}
+              <div className="mt-2 bg-[#0B3A26] text-white px-3 py-1 rounded-full border-2 border-white/20 shadow-md">
+                <span className="text-[10px] font-mono font-bold tracking-wider">
+                  UID: {formData.villageCode || 'ABC-123-XYZ'}
+                </span>
+              </div>
             </div>
           </div>
           

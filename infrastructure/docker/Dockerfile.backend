@@ -1,0 +1,28 @@
+# Multi-Stage Docker Build for Express Backend
+# Uses slim node image for security and size reduction
+FROM node:18-alpine
+
+# Set environment variables
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
+# Copy application code
+COPY server.js .
+
+# Create an unprivileged user for security
+# Alpine Node image already includes a 'node' user
+RUN chown -R node:node /app
+
+# Switch to non-root user
+USER node
+
+# Expose Express port
+EXPOSE 5000
+
+# Run Express server
+CMD ["node", "server.js"]

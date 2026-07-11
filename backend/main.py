@@ -130,5 +130,63 @@ async def validation_webhook(result: ValidationResult, background_tasks: Backgro
     background_tasks.add_task(validate_model_health, result)
     return {"status": "acknowledged"}
 
+# Point 88: Background Task Queuing for Alert Dispatches
+def dispatch_alert_email(node_id: str, aqi: int):
+    # Mock heavy synchronous IO task
+    import time
+    time.sleep(1)
+    logger.info(f"Dispatched SMS alert for node {node_id} (AQI {aqi})")
+
+@api_router.post("/telemetry/ingest")
+async def ingest_sensor_data(reading: SensorReading, background_tasks: BackgroundTasks):
+    """
+    Simulates ingesting new sensor data. If threshold crossed, sends background task.
+    """
+    if reading.pm25_raw > 150.0:
+        # Offload the SMS/Email dispatch to background worker pool
+        background_tasks.add_task(dispatch_alert_email, reading.node_id, reading.pm25_raw)
+        
+    return {"status": "ingested", "queued_alerts": reading.pm25_raw > 150.0}
+
+# Point 60: Asynchronous Inference Pipelines
+import uuid
+
+# Mock Redis Store
+jobs_broker = {}
+
+async def process_ml_forecast(job_id: str, city_id: str):
+    # Simulate heavy ML inference delay
+    await asyncio.sleep(5)
+    jobs_broker[job_id] = {
+        "status": "complete",
+        "result": {
+            "city": city_id,
+            "forecast_aqi": 185,
+            "confidence": 0.92,
+            "shap_values": {
+                "stubble": 45,
+                "wind": 25
+            }
+        }
+    }
+    logger.info(f"ML Job {job_id} completed.")
+
+@api_router.post("/ml/forecast/async")
+async def request_forecast(city_id: str, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    jobs_broker[job_id] = {"status": "processing"}
+    
+    # Push ML job to background (simulating Redis/Celery queue)
+    background_tasks.add_task(process_ml_forecast, job_id, city_id)
+    
+    return {"job_id": job_id, "status": "queued"}
+
+@api_router.get("/ml/forecast/status/{job_id}")
+async def check_forecast_status(job_id: str):
+    job = jobs_broker.get(job_id)
+    if not job:
+        return {"error": "Job not found"}, 404
+    return job
+
 # Register nested router
 app.include_router(api_router)

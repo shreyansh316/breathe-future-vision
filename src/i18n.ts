@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import enJSON from './locales/en.json';
 import hiJSON from './locales/hi.json';
+import paJSON from './locales/pa.json';
 
 i18n
   .use(LanguageDetector)
@@ -11,7 +12,8 @@ i18n
   .init({
     resources: {
       en: { translation: enJSON },
-      hi: { translation: hiJSON }
+      hi: { translation: hiJSON },
+      pa: { translation: paJSON }
     },
     fallbackLng: 'en',
     interpolation: {

@@ -1,32 +1,10 @@
 import React from 'react';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { blogs } from '@/data/blogs';
 
 export const RecentBlogsSlider = () => {
-  const blogs = [
-    {
-      id: 1,
-      title: "World Top 10 Hottest Cities Are All in India Again - May 2026",
-      date: "4 Jun 2026",
-      author: "Gyane Haobijam",
-      image: "linear-gradient(135deg, #FF6B6B, #C0392B)",
-    },
-    {
-      id: 2,
-      title: "Delhi Implements Advanced AI Smog Towers Across NCR Region",
-      date: "28 May 2026",
-      author: "Priya Sharma",
-      image: "linear-gradient(135deg, #4facfe, #00f2fe)",
-    },
-    {
-      id: 3,
-      title: "The Impact of EV Adoption on Urban Particulate Matter",
-      date: "15 May 2026",
-      author: "Rahul Verma",
-      image: "linear-gradient(135deg, #43e97b, #38f9d7)",
-    }
-  ];
-
   return (
     <div className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
       
@@ -58,36 +36,43 @@ export const RecentBlogsSlider = () => {
       {/* Cards Layout Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {blogs.map((blog) => (
-          <Card key={blog.id} className="bg-transparent border-none shadow-none group cursor-pointer">
-            {/* Thumbnail Image Container */}
-            <div 
-              className="w-full aspect-[4/3] rounded-2xl mb-5 relative overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]"
-              style={{ background: blog.image }}
-            >
-              {/* Overlay styling to make it look like a photo placeholder */}
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-              
-              {/* Shortcut Button Pinned Top Right */}
-              <div className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          <Link key={blog.id} to={`/blog/${blog.id}`} className="block">
+            <Card className="bg-transparent border-none shadow-none group cursor-pointer h-full">
+              {/* Thumbnail Image Container */}
+              <div 
+                className="w-full aspect-[4/3] rounded-2xl mb-5 relative overflow-hidden transition-transform duration-500 group-hover:scale-[1.02] bg-slate-800"
+              >
+                <img 
+                  src={blog.imageUrl} 
+                  alt={blog.title} 
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+                
+                {/* Overlay styling to make it look like a photo placeholder */}
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+                
+                {/* Shortcut Button Pinned Top Right */}
+                <div className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                </div>
               </div>
-            </div>
 
-            {/* Title */}
-            <h3 className="text-lg font-bold text-gray-200 mb-4 line-clamp-2 group-hover:text-blue-400 transition-colors">
-              {blog.title}
-            </h3>
+              {/* Title */}
+              <h3 className="text-lg font-bold text-gray-200 mb-4 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                {blog.title}
+              </h3>
 
-            {/* Metadata Badges */}
-            <div className="flex items-center space-x-3 text-xs font-bold text-gray-500">
-              <span className="px-3 py-1 rounded-full border border-gray-800 bg-[#1a1d20]/50 tracking-wide">
-                {blog.date}
-              </span>
-              <span className="px-3 py-1 rounded-full border border-gray-800 bg-[#1a1d20]/50 tracking-wide">
-                {blog.author}
-              </span>
-            </div>
-          </Card>
+              {/* Metadata Badges */}
+              <div className="flex items-center space-x-3 text-xs font-bold text-gray-500">
+                <span className="px-3 py-1 rounded-full border border-gray-800 bg-[#1a1d20]/50 tracking-wide">
+                  {blog.date}
+                </span>
+                <span className="px-3 py-1 rounded-full border border-gray-800 bg-[#1a1d20]/50 tracking-wide">
+                  {blog.author}
+                </span>
+              </div>
+            </Card>
+          </Link>
         ))}
       </div>
 

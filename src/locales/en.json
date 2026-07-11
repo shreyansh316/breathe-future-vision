@@ -3,6 +3,15 @@
     "title": "AakaashSetu NLP Engine",
     "subtitle": "Live telemetry fused with ISRO satellite data to deliver hyper-local, actionable spatial intelligence.",
     "latest_sync": "LATEST SYNC",
+    "hero": {
+      "badge": "India's Next-Generation Air Monitoring Network",
+      "title1": "Breathe",
+      "title2": "The Future",
+      "title3": "Vision",
+      "subtitle": "Protect your surroundings with VayuRakshak. Get real-time pollution data and health advisories.",
+      "cta_explore": "Explore Live Map",
+      "cta_learn": "Learn More"
+    },
     "search": {
       "title": "Semantic Spatial Search",
       "placeholder": "e.g., 'Show me agricultural burning impact near Punjab over the last 48 hours'",

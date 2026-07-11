@@ -8,7 +8,8 @@ import { ProductHeroCarousel } from '@/components/ProductHeroCarousel';
 import { RecentBlogsSlider } from '@/components/RecentBlogsSlider';
 import { AppFooter } from '@/components/AppFooter';
 import { PlatformShowcase } from '@/components/PlatformShowcase';
-import { Hero } from '@/components/Hero';
+import { HeroTelemetryCard } from '@/components/HeroTelemetryCard';
+import { AqiScaleGuide } from '@/components/AqiScaleGuide';
 import { AirQualityDashboard } from '@/components/AirQualityDashboard';
 import { VayuNetDashboard } from '@/components/VayuNetDashboard';
 import { EnhancedDataDashboard } from '@/components/EnhancedDataDashboard';
@@ -21,6 +22,7 @@ import { AyurAQIDashboard } from '@/components/AyurAQIDashboard';
 import { AgroCleanDashboard } from '@/components/AgroCleanDashboard';
 import { ArAirFilter } from '@/components/ArAirFilter';
 import { CarbonCreditsDashboard } from '@/components/CarbonCreditsDashboard';
+import { HealthRoutePlanner } from '@/components/HealthRoutePlanner';
 import { CleanAirPanchayats } from '@/components/CleanAirPanchayats';
 import { KisanEMitraDashboard } from '@/components/KisanEMitraDashboard';
 import { VayuGuardAlerts } from '@/components/VayuGuardAlerts';
@@ -59,7 +61,8 @@ const Index = () => {
         <GlobalHeader />
         <SubNavigation />
         
-        <Hero />
+        <HeroTelemetryCard />
+        <AqiScaleGuide />
         <MultiFeatureBar />
         
         {/* High-Fidelity UI Presentation Dashboard */}
@@ -116,6 +119,7 @@ const Index = () => {
         {/* Carbon Credits Gamification Section */}
         <section className="py-12 px-4">
           <div className="max-w-7xl mx-auto">
+            <HealthRoutePlanner />
             <CarbonCreditsDashboard />
           </div>
         </section>

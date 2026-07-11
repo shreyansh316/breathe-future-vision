@@ -35,6 +35,37 @@ export default defineConfig(({ mode }) => ({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            // Cache API requests using StaleWhileRevalidate so it works offline
+            urlPattern: /^https:\/\/.*\/api\/v2\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'vayu-api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 24 * 60 * 60 // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Aggressively cache map tiles (MapLibre/Carto/Satellite)
+            urlPattern: /^https:\/\/[a-z]\.basemaps\.cartocdn\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'map-tiles-cache',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 7 * 24 * 60 * 60 // 1 week
+              }
+            }
+          }
+        ]
       }
     })
   ].filter(Boolean),
@@ -54,6 +85,23 @@ export default defineConfig(({ mode }) => ({
       },
       format: {
         comments: false,
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor'; // Core React libraries
+            }
+            if (id.includes('recharts')) {
+              return 'charts'; // Data Visualization
+            }
+            if (id.includes('leaflet') || id.includes('maplibre-gl')) {
+              return 'maps'; // Geospatial Engine
+            }
+          }
+        }
       }
     }
   }

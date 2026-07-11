@@ -133,8 +133,6 @@ export const VayuGuardRuleEngine = () => {
                   dataKey="value" 
                   stroke="#6366f1" 
                   strokeWidth={2}
-                  fillOpacity={0} 
-                  strokeWidth={1.5}
                   fill="url(#colorValue)" 
                 />
               </AreaChart>

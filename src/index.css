@@ -11,6 +11,18 @@ All colors MUST be HSL.
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
+    /* Enterprise Colors */
+    --bg-main: #0B0F19;         
+    --bg-card: #161C2A;         
+    --border-glow: #222F47;     
+    --text-primary: #F8FAFC;    
+    --text-secondary: #94A3B8;  
+    --aqi-good: #10B981;        
+    --aqi-moderate: #F59E0B;    
+    --aqi-poor: #EF4444;        
+    --aqi-severe: #8B5CF6;      
+    --aqi-hazardous: #7F1D1D;
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 
@@ -111,6 +123,18 @@ All colors MUST be HSL.
     @apply bg-[#0a0f16]/80 backdrop-blur-md border border-white/10 shadow-2xl;
   }
 
+  .dashboard-card {
+    background: rgba(22, 28, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dashboard-card:hover {
+    border-color: #38BDF8;
+    transform: translateY(-2px);
+  }
+
   .interactive-element {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -151,5 +175,33 @@ All colors MUST be HSL.
   }
   .leaflet-interactive {
     transition: all 0.3s ease !important;
+  }
+
+  /* Advanced Hardware-Accelerated Animations */
+  @keyframes breathe {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 60px rgba(255, 255, 255, 0.6);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .animate-breathe-slow {
+    animation: breathe 4s ease-in-out infinite;
+  }
+  
+  .animate-breathe-medium {
+    animation: breathe 2s ease-in-out infinite;
+  }
+
+  .animate-breathe-fast {
+    animation: breathe 0.8s ease-in-out infinite;
   }
 }

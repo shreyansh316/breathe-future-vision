@@ -1,41 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Globe } from 'lucide-react';
 
 export const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'hi' : 'en';
-    i18n.changeLanguage(newLang);
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिंदी' },
+    { code: 'pa', label: 'ਪੰਜਾਬੀ' }
+  ];
+
+  const currentLangLabel = languages.find(l => l.code === i18n.language)?.label || 'English';
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-1.5 bg-[#1f2327]/80 hover:bg-gray-700 border border-white/10 text-gray-300 px-3 py-1.5 rounded-lg transition-colors text-xs lg:text-sm font-medium shadow-sm backdrop-blur-md"
+        className="flex items-center space-x-2 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl transition-colors text-sm font-medium shadow-lg backdrop-blur-md"
       >
-        <span>{i18n.language === 'en' ? 'EN-IN' : 'HI-IN'}</span>
-        <ChevronDown className="w-3 h-3 text-gray-500" />
+        <Globe className="w-4 h-4 text-sky-400" />
+        <span>{currentLangLabel}</span>
+        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-32 bg-[#1f2327]/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl overflow-hidden z-50">
-          <button 
-            onClick={toggleLanguage}
-            className="w-full text-left px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            {i18n.language === 'en' ? 'HI-IN' : 'EN-IN'}
-          </button>
-          <button 
-            onClick={() => setIsOpen(false)}
-            className="w-full text-left px-4 py-2 text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            US-AQI
-          </button>
+        <div className="absolute right-0 mt-2 w-36 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
+          <div className="py-1">
+            {languages.map((lang) => (
+              <button 
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                  i18n.language === lang.code 
+                    ? 'bg-sky-500/20 text-sky-400' 
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

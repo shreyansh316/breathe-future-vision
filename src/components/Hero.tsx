@@ -1,11 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Satellite, Activity, Map } from 'lucide-react';
-import { AnimatedLogo } from './AnimatedLogo';
+import { useTranslation } from 'react-i18next';
 import { SmartSearchBar } from './SmartSearchBar';
-import { LanguageSelector } from './LanguageSelector';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Hero = () => {
+  const { t } = useTranslation();
+  
   const scrollToMap = () => {
     document.getElementById('pollution-map')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -18,23 +20,25 @@ export const Hero = () => {
       
       {/* Language Selector */}
       <div className="fixed top-4 right-4 z-50">
-        <LanguageSelector />
+        <LanguageSwitcher />
       </div>
 
       <div className="text-center max-w-6xl mx-auto mb-8 sm:mb-12 pt-20 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-900/50 bg-sky-900/20 text-sky-400 text-xs font-mono uppercase tracking-widest mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-900/50 bg-sky-900/20 text-sky-400 text-xs font-mono uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(56,189,248,0.1)]">
           <Satellite className="w-3 h-3" />
-          Live Copernicus Sentinel-5P Telemetry Active
+          {t('dashboard.hero.badge')}
         </div>
         
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-6 leading-tight px-4 font-sans tracking-tight">
-          High-Resolution Satellite AOD Inversion & <br className="hidden md:block" />
+          {t('dashboard.hero.title1')} <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-            Hyperlocal Air Quality Forecasting.
-          </span>
+            {t('dashboard.hero.title2')}
+          </span> <br className="hidden md:block" />
+          {t('dashboard.hero.title3')}
         </h1>
+        
         <p className="text-lg sm:text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed px-4 font-light">
-          Proprietary geospatial analytics engine integrating CPCB ground truth with real-time Earth Observation datasets for precision atmospheric modeling.
+          {t('dashboard.hero.subtitle')}
         </p>
 
         {/* Smart Search Bar */}
@@ -48,13 +52,13 @@ export const Hero = () => {
             onClick={scrollToMap}
             className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-6 text-sm font-semibold rounded-lg shadow-lg hover:shadow-sky-500/25 transition-all duration-300 flex gap-2"
           >
-            <Map className="w-4 h-4" /> Initialize Map Viewer
+            <Map className="w-4 h-4" /> {t('dashboard.hero.cta_explore')}
           </Button>
           <Button 
             variant="outline"
             className="border-slate-700 bg-slate-800/50 text-white hover:bg-slate-700 hover:text-white px-8 py-6 text-sm font-semibold rounded-lg transition-all duration-300 flex gap-2 backdrop-blur-md"
           >
-            <Activity className="w-4 h-4" /> View Model Validation
+            <Activity className="w-4 h-4" /> {t('dashboard.hero.cta_learn')}
           </Button>
         </div>
 

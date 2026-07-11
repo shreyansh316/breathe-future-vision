@@ -74,6 +74,26 @@ export const useExposureTracker = () => {
     }
   };
 
+  // Point 21: Web Workers for Heavy Computations
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    // Initialize Web Worker
+    workerRef.current = new Worker(new URL('../workers/exposureWorker.ts', import.meta.url), { type: 'module' });
+    
+    // Listen for calculated results
+    workerRef.current.onmessage = (e) => {
+      const { pm25Inhaled, equivalentCigarettes, riskLevel } = e.data;
+      // You could store these advanced metrics in state, but for this demo 
+      // we'll just log them to prove the worker is functioning
+      console.log('Worker Result:', { pm25Inhaled, equivalentCigarettes, riskLevel });
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, []);
+
   // Tracking loop
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -85,7 +105,17 @@ export const useExposureTracker = () => {
           const fluctuation = Math.random() > 0.5 ? 5 : -5;
           const newPM25 = Math.max(10, Math.min(300, prev.currentPM25 + fluctuation));
           
-          // Calculate exposure (1 sec real = 1 min simulated for demo)
+          // Dispatch heavy calculation to Web Worker asynchronously
+          if (workerRef.current) {
+            workerRef.current.postMessage({
+              baseAqi: newPM25,
+              activityLevel: 'light',
+              durationMinutes: prev.timeTracked + 1,
+              maskType: 'none'
+            });
+          }
+          
+          // Basic state updates remain on UI thread
           const exposureThisMinute = newPM25 / 60;
           const newCumulative = prev.cumulativeExposure + exposureThisMinute;
           const newTimeTracked = prev.timeTracked + 1;
@@ -100,11 +130,11 @@ export const useExposureTracker = () => {
           const safeHoursRemaining = remainingExposure > 0 ? (remainingExposure / newPM25) : 0;
           
           const newBadges = [...prev.badges];
-          if (newCumulative < 50 && newTimeTracked > 60 && !newBadges.includes('Clean Lungs')) {
-            newBadges.push('Clean Lungs');
+          if (newTimeTracked >= 60 && !newBadges.includes('Hour Walker')) {
+            newBadges.push('Hour Walker');
           }
-          if (newTimeTracked > 120 && !newBadges.includes('Avid Tracker')) {
-            newBadges.push('Avid Tracker');
+          if (newPM25 < 30 && !newBadges.includes('Clean Air Seeker')) {
+            newBadges.push('Clean Air Seeker');
           }
 
           return {
