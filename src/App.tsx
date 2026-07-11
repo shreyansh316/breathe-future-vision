@@ -13,6 +13,10 @@ import AppStoreRedirect from "./pages/AppStoreRedirect";
 import ApiContact from "./pages/ApiContact";
 import WidgetBuilder from "./pages/WidgetBuilder";
 import CommandCenter from "./pages/CommandCenter";
+import Login from "./pages/Login";
+import UserDashboard from "./pages/UserDashboard";
+import AccountSettings from "./pages/AccountSettings";
+import DataDownload from "./pages/DataDownload";
 import { LiteVillageView } from "@/components/LiteVillageView";
 
 // Wrapper for the lite view to extract params
@@ -64,6 +68,10 @@ const App = () => {
               <Route path="/api-contact" element={<ApiContact />} />
               <Route path="/widget-builder" element={<WidgetBuilder />} />
               <Route path="/admin/command-center" element={<CommandCenter />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/account/*" element={<AccountSettings />} />
+              <Route path="/data-download" element={<DataDownload />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

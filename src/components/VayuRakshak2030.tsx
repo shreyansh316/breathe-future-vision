@@ -35,11 +35,32 @@ export const VayuRakshak2030 = () => {
   const [isScreening, setIsScreening] = useState(false);
   const [aiScreeningStep, setAiScreeningStep] = useState(0);
 
-  const handleFellowSubmit = (e: React.FormEvent) => {
+  const handleFellowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsScreening(true);
     setAiScreeningStep(1);
     
+    // Extract form data
+    const formData = new FormData(e.target as HTMLFormElement);
+    const userName = formData.get('name') as string;
+    const userEmail = formData.get('email') as string;
+    const userSkill = formData.get('role') as string;
+
+    // Fire the async API payload
+    try {
+      fetch('http://localhost:8000/api/v1/fellowship/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userName,
+          email: userEmail,
+          skillset: userSkill
+        })
+      }).catch(err => console.error("Transmission error:", err)); // Don't block UI on fetch fail
+    } catch (error) {
+      console.error("Transmission error:", error);
+    }
+
     setTimeout(() => setAiScreeningStep(2), 1500);
     setTimeout(() => setAiScreeningStep(3), 3000);
     setTimeout(() => {
@@ -56,9 +77,9 @@ export const VayuRakshak2030 = () => {
               <Mail className="w-4 h-4 mr-2" />
               Mail • admissions@vayunet.gov.in
             </div>
-            <div className="font-bold text-gray-900 text-base mt-1">You are selected as a VayuFellow!</div>
+            <div className="font-bold text-gray-900 text-base mt-1">✨ Instant Selection Successful!</div>
             <div className="text-sm text-gray-600 leading-tight">
-              Congratulations! The AI screening matrix evaluated your application with a 94% match. Your automated onboarding schedule has been attached...
+              Congratulations! The AI screening matrix evaluated your application with a 94% match. Check your inbox for the automated email template.
             </div>
           </div>, 
           { duration: 8000, className: "p-4 border-l-4 border-blue-500 bg-white shadow-2xl rounded-xl w-full max-w-md mx-auto" }
@@ -451,20 +472,20 @@ export const VayuRakshak2030 = () => {
         </Tabs>
 
         <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-[#00C853]/10 via-[#FF6F00]/10 to-[#2196F3]/10 rounded-2xl p-8 backdrop-blur-sm">
-            <h3 className="text-2xl font-bold text-[#263238] mb-4">
+          <div className="revolution-container">
+            <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">
               Join the VayuRakshak Revolution
             </h3>
-            <p className="text-lg text-[#263238]/70 mb-6 max-w-3xl mx-auto">
+            <p className="text-lg text-slate-400 mb-8 max-w-3xl mx-auto">
               Be part of India's journey towards cleaner air and smarter environmental intelligence. 
               Together, we'll build the 2030-ready platform that Bharat deserves.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               
               {/* Become a VayuFellow Dialog */}
               <Dialog open={isFellowModalOpen} onOpenChange={setIsFellowModalOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-[#00C853] to-[#00A844] hover:from-[#00A844] hover:to-[#00C853] text-white px-8 py-3 text-lg">
+                  <Button className="btn-primary-glow px-10 py-6 text-lg rounded-xl">
                     <Users className="w-5 h-5 mr-2" />
                     Become a VayuFellow
                   </Button>
@@ -513,15 +534,15 @@ export const VayuRakshak2030 = () => {
                     <form onSubmit={handleFellowSubmit} className="space-y-4 py-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" placeholder="E.g., Dr. Vikram Sarabhai" required />
+                        <Input name="name" id="name" placeholder="E.g., Dr. Vikram Sarabhai" required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email Address</Label>
-                        <Input id="email" type="email" placeholder="vikram@example.com" required />
+                        <Input name="email" id="email" type="email" placeholder="vikram@example.com" required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="role">Area of Expertise</Label>
-                        <select id="role" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                        <select name="role" id="role" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
                           <option value="">Select an area...</option>
                           <option value="data">Data Science & AI</option>
                           <option value="hardware">Hardware & IoT Engineering</option>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, User, ArrowUpRight, Search, Menu, X, CloudSun, ChevronDown, LocateFixed } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { RankingMegaMenu } from './RankingMegaMenu';
 import { ProductsMegaMenu } from './ProductsMegaMenu';
@@ -9,18 +10,10 @@ import { ResourcesMegaMenu } from './ResourcesMegaMenu';
 export const GlobalHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSupabaseLogin = async () => {
-    try {
-      // Phase 39: Polyglot Database Auth (Supabase)
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-      });
-      if (error) throw error;
-      alert("Redirecting to Supabase OAuth Provider...");
-    } catch (error: any) {
-      alert(`Supabase Auth Required: Ensure your .env keys are valid.\nError: ${error.message}`);
-    }
+  const handleLoginClick = () => {
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -106,7 +99,7 @@ export const GlobalHeader = () => {
           </button>
           
           <button 
-            onClick={handleSupabaseLogin}
+            onClick={handleLoginClick}
             className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transform hover:-translate-y-0.5"
           >
             <span>Login</span> <ArrowUpRight className="w-3 h-3" />

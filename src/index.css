@@ -204,4 +204,32 @@ All colors MUST be HSL.
   .animate-breathe-fast {
     animation: breathe 0.8s ease-in-out infinite;
   }
+
+  /* VayuRakshak Revolution Section */
+  .revolution-container {
+    background: radial-gradient(130% 100% at 50% 0%, rgba(22, 28, 42, 0.8) 0%, #0B0F19 100%);
+    border: 1px solid #222F47;
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Sky-blue interactive cyber glow for primary action buttons */
+  .btn-primary-glow {
+    background: #10B981; /* Vivid Emerald Green */
+    color: #0B0F19;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.8); /* Shifts to hyper-bright sky blue on hover */
+    background: #38BDF8;
+  }
 }

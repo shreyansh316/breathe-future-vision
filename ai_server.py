@@ -1,9 +1,12 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Dict, Any
 import datetime
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = FastAPI(title="AakaashSetu AI Orchestration Hub", version="2.0.0")
 
@@ -121,6 +124,74 @@ async def process_ai_agent_query(payload: ChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI Core processing routine failure: {str(e)}")
+
+# ==========================================
+# Phase 4: Automated Fellowship Onboarding 
+# ==========================================
+
+class FellowshipApplication(BaseModel):
+    name: str
+    email: EmailStr
+    skillset: str
+
+def send_selection_email(email: str, name: str, skillset: str):
+    # SMTP Configuration
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+    SENDER_EMAIL = os.getenv("SMTP_USER", "system@vayurakshak.in") 
+    SENDER_PASSWORD = os.getenv("SMTP_PASS", "your-secure-app-password")
+
+    if SENDER_PASSWORD == "your-secure-app-password":
+        print("[Warning] SMTP_PASS not configured. Skipping actual email dispatch.")
+        return
+
+    # Crafting a premium, enterprise-grade HTML Email template
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "✨ Welcome to the Revolution: You are Selected as a VayuFellow!"
+    message["From"] = f"VayuRakshak Intelligence <{SENDER_EMAIL}>"
+    message["To"] = email
+
+    html_content = f"""
+    <html>
+      <body style="font-family: 'Inter', sans-serif; background-color: #0B0F19; color: #F8FAFC; padding: 40px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #161C2A; border: 1px solid #222F47; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <h2 style="color: #38BDF8; margin-top: 0; font-size: 24px; letter-spacing: -0.025em;">Congratulations {{name}},</h2>
+          <p style="color: #94A3B8; font-size: 16px; line-height: 1.6;">
+            Our automated environmental coordination grid has evaluated your application profile. We are thrilled to inform you that <strong>you have been officially selected</strong> to join the <strong>VayuRakshak Fellowship Revolution</strong>.
+          </p>
+          <div style="background-color: #0B0F19; border-left: 4px solid #10B981; padding: 16px; margin: 24px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0; color: #F8FAFC; font-weight: 600;">Core Assignment Focus: {{skillset.upper()}} ENGINE CORES</p>
+            <p style="margin: 4px 0 0 0; color: #94A3B8; font-size: 14px;">Platform Target Era: 2030 Environmental Intelligence Grid</p>
+          </div>
+          <p style="color: #94A3B8; font-size: 16px; line-height: 1.6;">
+            Your localized command center dashboard access key along with your baseline ecosystem tasks will arrive in your main space console shortly.
+          </p>
+          <hr style="border: 0; border-top: 1px solid #222F47; margin: 32px 0;">
+          <p style="color: #64748B; font-size: 12px; margin: 0; text-align: center;">Powered by VayuNet Core • Automated Environmental Guardian Grid</p>
+        </div>
+      </body>
+    </html>
+    """
+    
+    message.attach(MIMEText(html_content, "html"))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls() # Secure connection upgrade
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, email, message.as_string())
+            print(f"[Automation] Sent selection email to {email}")
+    except Exception as e:
+        print(f"[Error] Failed to transmit automation email log: {e}")
+
+@app.post("/api/v1/fellowship/join", status_code=status.HTTP_202_ACCEPTED)
+async def register_fellow(application: FellowshipApplication, background_tasks: BackgroundTasks):
+    print(f"[Registration] Incoming fellowship request from {application.name}")
+    
+    # Enqueue the email to run in the background worker pool instantly
+    background_tasks.add_task(send_selection_email, application.email, application.name, application.skillset)
+    
+    return {"status": "success", "message": "Application processed. Check your inbox."}
 
 if __name__ == "__main__":
     import uvicorn
