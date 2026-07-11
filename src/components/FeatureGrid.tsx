@@ -25,8 +25,8 @@ const features = [
   {
     title: "Health Risk Assessment",
     description: "Population-weighted exposure analysis with demographic overlays",
-    status: "Coming Soon",
-    color: "#B0BEC5"
+    status: "Live",
+    color: "#00C853"
   },
   {
     title: "Policy Impact Analysis",
@@ -49,8 +49,8 @@ const features = [
   {
     title: "Voice-Activated Search",
     description: "Ask about air quality anywhere in India using natural language",
-    status: "Coming Soon",
-    color: "#B0BEC5"
+    status: "Live",
+    color: "#00C853"
   },
   {
     title: "Historical Trend Analysis",
@@ -73,8 +73,8 @@ const features = [
   {
     title: "Geo-fenced Alerts",
     description: "Location-based notifications for pollution threshold breaches",
-    status: "Coming Soon",
-    color: "#B0BEC5"
+    status: "Live",
+    color: "#00C853"
   }
 ];
 

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,65 @@ import {
 
 export const UniqueTools = () => {
   const [selectedTool, setSelectedTool] = useState('air-scanner');
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Stop camera stream
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  // Cleanup on unmount or tab change
+  useEffect(() => {
+    if (selectedTool !== 'air-scanner') {
+      stopCamera();
+    }
+    return () => stopCamera();
+  }, [selectedTool]);
+
+  const startCamera = async () => {
+    try {
+      setCameraError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Prefer back camera on mobile
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsCameraActive(true);
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setCameraError("Unable to access camera. Please check permissions.");
+    }
+  };
+
+  const handleScan = () => {
+    setIsScanning(true);
+    setScanComplete(false);
+    setTimeout(() => {
+      setIsScanning(false);
+      setScanComplete(true);
+      if (videoRef.current) {
+        videoRef.current.pause(); // Freeze frame on result
+      }
+    }, 2500);
+  };
+
+  const resetScan = () => {
+    setScanComplete(false);
+    if (videoRef.current) {
+      videoRef.current.play(); // Resume live feed
+    }
+  };
 
   const tools = [
     {
@@ -134,13 +193,111 @@ export const UniqueTools = () => {
                       Try {tool.title}
                     </Button>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 text-center">
-                    <div className="text-6xl mb-4" style={{ color: tool.color }}>
-                      <tool.icon className="w-24 h-24 mx-auto animate-pulse" />
-                    </div>
-                    <p className="text-sm text-[#263238]/70">
-                      Interactive demo coming soon
-                    </p>
+                  <div className="h-full min-h-[300px]">
+                    {tool.id === 'air-scanner' ? (
+                      <div className="bg-gray-900 rounded-2xl overflow-hidden relative w-full h-full min-h-[300px] flex items-center justify-center border-4 border-gray-800 shadow-2xl">
+                        
+                        <div className="absolute inset-0 bg-black flex items-center justify-center">
+                          <video 
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isCameraActive ? 'opacity-100' : 'opacity-0'}`}
+                          />
+                          
+                          {!isCameraActive && !cameraError && (
+                            <img 
+                              src="https://images.unsplash.com/photo-1572204292164-b35ba40e596b?auto=format&fit=crop&q=80&w=600" 
+                              alt="City skyline fallback" 
+                              className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm"
+                            />
+                          )}
+
+                          {cameraError && (
+                            <div className="absolute inset-0 bg-red-900/20 flex flex-col items-center justify-center p-6 text-center z-10">
+                              <AlertTriangle className="w-8 h-8 text-red-500 mb-3" />
+                              <p className="text-red-400 text-sm font-medium">{cameraError}</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Laser Scan Animation using tailwind arbitrary values */}
+                        {isScanning && (
+                          <div className="absolute inset-0 bg-blue-500/10 overflow-hidden pointer-events-none z-20">
+                            <div className="w-full h-1 bg-[#00C853] shadow-[0_0_15px_#00C853] absolute left-0 animate-[ping_2s_infinite]" style={{ top: '50%' }} />
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00C853]/20 to-transparent animate-pulse" />
+                          </div>
+                        )}
+
+                        {!isCameraActive && !cameraError && (
+                          <Button 
+                            onClick={startCamera}
+                            className="relative z-30 bg-[#2196F3] hover:bg-[#1976D2] text-white shadow-xl"
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            Turn on Camera
+                          </Button>
+                        )}
+
+                        {isCameraActive && !isScanning && !scanComplete && (
+                          <Button 
+                            onClick={handleScan}
+                            className="relative z-30 bg-[#00C853] hover:bg-[#00A844] text-white shadow-xl shadow-green-900/50"
+                          >
+                            <Target className="w-4 h-4 mr-2" />
+                            Start AI Scan
+                          </Button>
+                        )}
+
+                        {isScanning && (
+                          <div className="relative z-30 bg-black/80 backdrop-blur-md text-white px-5 py-3 rounded-full flex items-center shadow-2xl border border-white/10">
+                            <div className="w-4 h-4 border-2 border-[#00C853] border-t-transparent rounded-full animate-spin mr-3" />
+                            <span className="text-sm font-medium tracking-wide">Analyzing Particulates...</span>
+                          </div>
+                        )}
+
+                        {scanComplete && (
+                          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col justify-center animate-in fade-in duration-500 z-30">
+                             <h4 className="text-[#00C853] font-bold text-xl mb-6 flex items-center justify-center">
+                               <Shield className="w-6 h-6 mr-2" /> AI Vision Results
+                             </h4>
+                             <div className="space-y-4 text-left max-w-sm mx-auto w-full">
+                               <div className="bg-white/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                 <span className="text-gray-300 text-sm font-medium">Estimated AQI</span>
+                                 <Badge className="bg-orange-500 text-white font-bold px-3 py-1 text-sm">145 (Poor)</Badge>
+                               </div>
+                               <div className="bg-white/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                 <span className="text-gray-300 text-sm font-medium">Visibility Index</span>
+                                 <span className="text-white font-bold">2.4 km</span>
+                               </div>
+                               <div className="bg-white/10 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                                 <span className="text-gray-300 text-sm font-medium">Primary Pollutant</span>
+                                 <span className="text-gray-400 font-bold">PM2.5 / Smog</span>
+                               </div>
+                             </div>
+                             <div className="mt-8 text-center space-x-4">
+                               <Button onClick={resetScan} variant="outline" className="border-gray-500 text-gray-700 hover:bg-gray-100 bg-white">
+                                 Scan Again
+                               </Button>
+                               <Button onClick={stopCamera} variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/10">
+                                 Close Camera
+                               </Button>
+                             </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 text-center h-full flex flex-col justify-center items-center border-2 border-dashed border-gray-200">
+                        <div className="text-6xl mb-6" style={{ color: tool.color }}>
+                          <tool.icon className="w-20 h-20 mx-auto opacity-80" />
+                        </div>
+                        <h4 className="font-bold text-gray-800 mb-2">{tool.title}</h4>
+                        <p className="text-sm text-[#263238]/60 font-medium">
+                          Interactive demo coming soon
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>

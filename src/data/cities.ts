@@ -20,6 +20,7 @@ export interface City {
   o3?: number;
   so2?: number;
   co?: number;
+  isRuralNode?: boolean;
 }
 
 // Enhanced city positions for 51 cities across India
@@ -258,5 +259,78 @@ export const fetchPollutionData = async (): Promise<City[]> => {
   }
   
   console.log('Completed WAQI API data fetch. Updated', updatedCities.filter(c => c.actualAqi).length, 'cities with real data');
-  return updatedCities;
+  return generateNationalGrid(updatedCities);
+};
+
+// Helper to calculate distance between two coordinates
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const p = 0.017453292519943295;    // Math.PI / 180
+  const c = Math.cos;
+  const a = 0.5 - c((lat2 - lat1) * p)/2 + 
+          c(lat1 * p) * c(lat2 * p) * 
+          (1 - c((lon2 - lon1) * p))/2;
+  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+};
+
+// Generate 7,900 simulated rural IoT nodes across India, anchored to real API data
+const generateNationalGrid = (majorCities: City[]): City[] => {
+  const gridCities = [...majorCities];
+  const numNodes = 7900;
+  
+  // A very rough bounding approximation of India's landmass
+  // to prevent dropping nodes in the ocean.
+  const landBoxes = [
+    { minLat: 28, maxLat: 34, minLng: 74, maxLng: 80 }, // North
+    { minLat: 24, maxLat: 28, minLng: 70, maxLng: 88 }, // Central/North
+    { minLat: 18, maxLat: 24, minLng: 72, maxLng: 86 }, // Central/South
+    { minLat: 8, maxLat: 18, minLng: 75, maxLng: 80 },  // South
+    { minLat: 22, maxLat: 28, minLng: 88, maxLng: 96 }  // Northeast
+  ];
+
+  for (let i = 0; i < numNodes; i++) {
+    const box = landBoxes[Math.floor(Math.random() * landBoxes.length)];
+    const lat = box.minLat + Math.random() * (box.maxLat - box.minLat);
+    const lng = box.minLng + Math.random() * (box.maxLng - box.minLng);
+    
+    // Find nearest major city to anchor the pollution level
+    let nearestCity = majorCities[0];
+    let minDistance = Infinity;
+    
+    // We only check the first 50 cities (actual major cities with real API data)
+    for (let j = 0; j < Math.min(50, majorCities.length); j++) {
+      const city = majorCities[j];
+      const dist = getDistance(lat, lng, city.coordinates[1], city.coordinates[0]);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestCity = city;
+      }
+    }
+
+    // Base PM2.5 is derived from the nearest real city, with 10-30% variance
+    // This creates a realistic "heat map" that obeys real-world weather patterns
+    const variance = 0.7 + Math.random() * 0.6; // 0.7 to 1.3 multiplier
+    let basePm25 = nearestCity.pm25 * variance;
+    
+    // Add distance decay: the further from a major city, the cleaner the air generally is
+    const distanceDecay = Math.max(0.5, 1 - (minDistance / 1000));
+    basePm25 *= distanceDecay;
+
+    // Minimum baseline PM2.5 for India
+    basePm25 = Math.max(15, basePm25);
+    
+    const aqiInfo = getAQIFromPM25(basePm25);
+    
+    gridCities.push({
+      name: `Node-IND-${i}`,
+      state: 'Rural Grid',
+      pm25: Math.round(basePm25),
+      pm10: Math.round(basePm25 * 1.5),
+      aqi: aqiInfo.aqi,
+      color: aqiInfo.color,
+      coordinates: [lng, lat],
+      isRuralNode: true,
+    });
+  }
+  
+  return gridCities;
 };

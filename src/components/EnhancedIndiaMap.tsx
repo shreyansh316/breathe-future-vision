@@ -1,8 +1,11 @@
-
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Zap, Activity } from 'lucide-react';
-import { cityPositions } from '@/data/cities';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, LayersControl } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
+import { useFireData } from '@/hooks/useFireData';
 
 interface City {
   name: string;
@@ -12,271 +15,125 @@ interface City {
   color: string;
   state: string;
   coordinates: [number, number];
-  position?: { x: number; y: number };
   actualAqi?: number;
-  temperature?: number;
-  humidity?: number;
 }
 
 interface EnhancedIndiaMapProps {
   cities: City[];
   selectedCity: string;
   onCitySelect: (cityName: string) => void;
+  showHeatmap?: boolean;
+  hoursAhead?: number;
+  showFires?: boolean;
 }
 
-export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect }: EnhancedIndiaMapProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const [mapDimensions, setMapDimensions] = useState({ width: 600, height: 480 });
-  const [hoveredCity, setHoveredCity] = useState<string | null>(null);
-
-  const citiesWithPositions = useMemo(() => cities.map(city => ({
-    ...city,
-    position: cityPositions[city.name as keyof typeof cityPositions] || { x: 0.5, y: 0.5 }
-  })), [cities]);
-
-  const drawRealisticIndiaMap = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Enhanced gradient background
-    const bgGradient = ctx.createLinearGradient(0, 0, width, height);
-    bgGradient.addColorStop(0, '#E3F2FD');
-    bgGradient.addColorStop(0.5, '#E8F5E8');
-    bgGradient.addColorStop(1, '#F3E5F5');
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Main India outline with better accuracy
-    ctx.fillStyle = '#E8F5E8';
-    ctx.strokeStyle = '#00C853';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = 'rgba(0, 200, 83, 0.3)';
-    ctx.shadowBlur = 8;
-
-    ctx.beginPath();
-    
-    // More detailed and accurate India outline
-    const points = [
-      [0.35, 0.15], [0.40, 0.12], [0.45, 0.15], [0.50, 0.18], [0.52, 0.20],
-      [0.70, 0.25], [0.75, 0.30], [0.78, 0.40], [0.75, 0.50], [0.70, 0.60],
-      [0.65, 0.70], [0.60, 0.80], [0.55, 0.85], [0.50, 0.90], [0.45, 0.85],
-      [0.40, 0.80], [0.38, 0.70], [0.35, 0.60], [0.32, 0.50], [0.30, 0.40],
-      [0.25, 0.35], [0.22, 0.30], [0.25, 0.25], [0.30, 0.20], [0.32, 0.17]
-    ];
-
-    points.forEach(([x, y], index) => {
-      const plotX = x * width;
-      const plotY = y * height;
-      
-      if (index === 0) {
-        ctx.moveTo(plotX, plotY);
-      } else {
-        // Add curves for smoother coastline
-        const prevX = points[index - 1][0] * width;
-        const prevY = points[index - 1][1] * height;
-        const cpX = (prevX + plotX) / 2;
-        const cpY = (prevY + plotY) / 2;
-        ctx.quadraticCurveTo(cpX, cpY, plotX, plotY);
-      }
-    });
-
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Add state boundaries for more realism
-    ctx.strokeStyle = '#00C853';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.4;
-    
-    // Major state boundaries
-    const stateBoundaries = [
-      [[0.28, 0.25], [0.35, 0.35]], // Gujarat-Rajasthan
-      [[0.35, 0.62], [0.55, 0.62]], // Maharashtra-Karnataka
-      [[0.48, 0.72], [0.60, 0.75]], // Andhra-Tamil Nadu
-      [[0.45, 0.35], [0.55, 0.45]], // Central India
-      [[0.50, 0.25], [0.65, 0.40]]  // North-East connection
-    ];
-
-    stateBoundaries.forEach(([start, end]) => {
-      ctx.beginPath();
-      ctx.moveTo(start[0] * width, start[1] * height);
-      ctx.lineTo(end[0] * width, end[1] * height);
-      ctx.stroke();
-    });
-
-    ctx.globalAlpha = 1;
-  };
-
-  const drawAnimatedCities = (ctx: CanvasRenderingContext2D, time: number) => {
-    citiesWithPositions.forEach((city, index) => {
-      const x = city.position.x * mapDimensions.width;
-      const y = city.position.y * mapDimensions.height;
-      const isSelected = city.name === selectedCity;
-      const isHovered = city.name === hoveredCity;
-      const baseSize = 6;
-      const intensity = Math.min(city.pm25 / 200, 1);
-      const size = baseSize + intensity * 12;
-
-      // Breathing animation for severe pollution
-      const breathingScale = city.pm25 > 150 ? 
-        1 + Math.sin(time * 0.003 + index * 0.5) * 0.2 : 1;
-      const animatedSize = size * breathingScale;
-
-      // Enhanced glow effect for selected/hovered cities
-      if (isSelected || isHovered) {
-        const glowSize = animatedSize + 20;
-        const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
-        glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-        glowGradient.addColorStop(0.5, isSelected ? 'rgba(0, 200, 83, 0.4)' : 'rgba(255, 255, 255, 0.3)');
-        glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        
-        ctx.beginPath();
-        ctx.arc(x, y, glowSize, 0, Math.PI * 2);
-        ctx.fillStyle = glowGradient;
-        ctx.fill();
-      }
-
-      // Pollution cloud visualization
-      const cloudGradient = ctx.createRadialGradient(x, y, 0, x, y, animatedSize + 8);
-      const alpha = Math.min(intensity * 0.8 + 0.2, 0.9);
-      cloudGradient.addColorStop(0, city.color + 'FF');
-      cloudGradient.addColorStop(0.4, city.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
-      cloudGradient.addColorStop(1, city.color + '00');
-      
-      ctx.beginPath();
-      ctx.arc(x, y, animatedSize + 8, 0, Math.PI * 2);
-      ctx.fillStyle = cloudGradient;
-      ctx.fill();
-
-      // Main city marker
-      const cityGradient = ctx.createRadialGradient(x, y, 0, x, y, animatedSize);
-      cityGradient.addColorStop(0, '#FFFFFF');
-      cityGradient.addColorStop(0.3, city.color);
-      cityGradient.addColorStop(1, city.color + '88');
-      
-      ctx.beginPath();
-      ctx.arc(x, y, animatedSize, 0, Math.PI * 2);
-      ctx.fillStyle = cityGradient;
-      ctx.fill();
-
-      // Enhanced border
-      ctx.beginPath();
-      ctx.arc(x, y, animatedSize, 0, Math.PI * 2);
-      ctx.strokeStyle = isSelected ? '#FFFFFF' : city.color;
-      ctx.lineWidth = isSelected ? 3 : 2;
-      ctx.stroke();
-
-      // AQI value display for selected city
-      if (isSelected && city.actualAqi) {
-        ctx.fillStyle = '#263238';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(city.actualAqi.toString(), x, y + 3);
-      }
-
-      // City name for selected/hovered cities
-      if (isSelected || isHovered) {
-        ctx.fillStyle = '#263238';
-        ctx.font = isSelected ? 'bold 13px sans-serif' : '12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(city.name, x, y - animatedSize - 12);
-      }
-    });
-  };
-
+// Component to handle flying to selected city
+const MapController = ({ selectedCity, cities }: { selectedCity: string, cities: City[] }) => {
+  const map = useMap();
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const city = cities.find(c => c.name === selectedCity);
+    if (city && city.coordinates) {
+      map.flyTo([city.coordinates[1], city.coordinates[0]], 6, {
+        duration: 1.5
+      });
+    }
+  }, [selectedCity, cities, map]);
+  return null;
+};
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+// Helper to get color based on forecasted PM2.5
+const getForecastColor = (pm25: number) => {
+  if (pm25 <= 35) return '#4CAF50';
+  if (pm25 <= 55) return '#FFA726';
+  if (pm25 <= 150) return '#FF8F00';
+  if (pm25 <= 250) return '#DC143C';
+  return '#8B0000';
+};
 
-    const handleResize = () => {
-      const container = canvas.parentElement;
-      if (container) {
-        const containerWidth = container.clientWidth;
-        const width = Math.min(containerWidth - 32, 700);
-        const height = width * 0.8;
-        setMapDimensions({ width, height });
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+// Heatmap Layer Component
+const HeatmapLayer = ({ cities, hoursAhead = 0 }: { cities: City[], hoursAhead?: number }) => {
+  const map = useMap();
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = mapDimensions.width;
-    canvas.height = mapDimensions.height;
-
-    const animate = (time: number) => {
-      ctx.clearRect(0, 0, mapDimensions.width, mapDimensions.height);
+    if (!(L as any).heatLayer) return;
+    
+    // Generate data points for heatmap [lat, lng, intensity]
+    // We add some synthetic points around cities to simulate the rural grid fusion
+    const points: any[] = [];
+    
+    cities.forEach(city => {
+      const lat = city.coordinates[1];
+      const lng = city.coordinates[0];
       
-      drawRealisticIndiaMap(ctx, mapDimensions.width, mapDimensions.height);
-      drawAnimatedCities(ctx, time);
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
+      // Simulate forecasting trend (worse at night, generally trending up over 5 days)
+      const trend = 1 + (hoursAhead / 120) * 1.5;
+      const forecastedPm25 = city.pm25 * trend;
+      const intensity = forecastedPm25 * 3;
+      
+      points.push([lat, lng, intensity]);
+      
+      // Simulate rural fusion spread
+      points.push([lat + 0.5, lng + 0.5, intensity * 0.6]);
+      points.push([lat - 0.5, lng - 0.5, intensity * 0.6]);
+      points.push([lat + 0.8, lng - 0.2, intensity * 0.4]);
+      points.push([lat - 0.2, lng + 0.8, intensity * 0.4]);
+    });
+    
+    const heatLayer = (L as any).heatLayer(points, {
+      radius: 35,
+      blur: 25,
+      maxZoom: 10,
+      max: 1000,
+      gradient: {0.2: 'blue', 0.4: 'lime', 0.6: 'yellow', 0.8: 'orange', 1.0: 'red'}
+    }).addTo(map);
+    
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      map.removeLayer(heatLayer);
     };
-  }, [mapDimensions, citiesWithPositions, selectedCity, hoveredCity]);
+  }, [cities, map]);
+  
+  return null;
+};
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+// Fire Layer Component
+const FireLayer = ({ showFires }: { showFires?: boolean }) => {
+  const { fires } = useFireData();
+  
+  if (!showFires) return null;
 
-    const rect = canvas.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
+  return (
+    <>
+      {fires.map(fire => (
+        <CircleMarker
+          key={fire.id}
+          center={[fire.lat, fire.lng]}
+          radius={4 + (fire.intensity / 20)}
+          pathOptions={{
+            fillColor: '#FF3D00',
+            fillOpacity: 0.8,
+            color: '#DD2C00',
+            weight: 1,
+            className: 'animate-pulse'
+          }}
+        >
+          <Popup>
+            <div className="p-1">
+              <h4 className="font-bold text-red-600 mb-1">Active Stubble Fire</h4>
+              <p className="text-xs text-gray-600">Intensity: {fire.intensity.toFixed(1)} FRP</p>
+              <p className="text-xs text-gray-600">Detected: {new Date(fire.timestamp).toLocaleTimeString()}</p>
+            </div>
+          </Popup>
+        </CircleMarker>
+      ))}
+    </>
+  );
+};
 
-    citiesWithPositions.forEach((city) => {
-      const cityX = city.position.x * mapDimensions.width;
-      const cityY = city.position.y * mapDimensions.height;
-      const distance = Math.sqrt((clickX - cityX) ** 2 + (clickY - cityY) ** 2);
-      
-      if (distance < 25) {
-        onCitySelect(city.name);
-      }
-    });
-  };
+export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatmap = false, hoursAhead = 0, showFires = false }: EnhancedIndiaMapProps) => {
+  
+  // Center of India approximately
+  const defaultCenter: [number, number] = [20.5937, 78.9629];
 
-  const handleCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const hoverX = event.clientX - rect.left;
-    const hoverY = event.clientY - rect.top;
-
-    let foundCity = null;
-    citiesWithPositions.forEach((city) => {
-      const cityX = city.position.x * mapDimensions.width;
-      const cityY = city.position.y * mapDimensions.height;
-      const distance = Math.sqrt((hoverX - cityX) ** 2 + (hoverY - cityY) ** 2);
-      
-      if (distance < 25) {
-        foundCity = city.name;
-      }
-    });
-
-    setHoveredCity(foundCity);
-  };
-
-  // CSS styles as a string for the scrollbar
+  // CSS styles for the scrollbar
   const scrollbarStyles = `
     .custom-scrollbar {
       scrollbar-width: thin;
@@ -292,29 +149,120 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect }: Enhance
       background-color: #00C853;
       border-radius: 2px;
     }
+    
+    .leaflet-container {
+      background: #E3F2FD;
+      z-index: 10;
+    }
   `;
 
   return (
     <div className="relative w-full">
       <style dangerouslySetInnerHTML={{ __html: scrollbarStyles }} />
       
-      <div className="flex justify-center mb-4">
-        <canvas
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          onMouseMove={handleCanvasHover}
-          onMouseLeave={() => setHoveredCity(null)}
-          className="cursor-pointer rounded-xl shadow-xl border-2 border-white/60 bg-gradient-to-br from-blue-50/90 to-green-50/90 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl"
-          style={{ maxWidth: '100%', height: 'auto' }}
-        />
+      <div className="h-[600px] w-full rounded-xl overflow-hidden border-2 border-indigo-100 shadow-inner">
+        <MapContainer 
+          center={defaultCenter} 
+          zoom={5} 
+          className="h-full w-full"
+          zoomControl={false}
+          scrollWheelZoom={true}
+          preferCanvas={true}
+        >
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Standard View">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              />
+            </LayersControl.BaseLayer>
+            
+            <LayersControl.BaseLayer name="Satellite View">
+              <TileLayer
+                attribution='&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
+          
+          <MapController selectedCity={selectedCity} cities={cities} />
+          
+          {showHeatmap && <HeatmapLayer cities={cities} hoursAhead={hoursAhead} />}
+          
+          <FireLayer showFires={showFires} />
+
+          {!showHeatmap && cities.map((city, index) => {
+            const isSelected = city.name === selectedCity;
+            const trend = 1 + (hoursAhead / 120) * 1.5;
+            const forecastedPm25 = hoursAhead > 0 ? city.pm25 * trend : city.pm25;
+            const forecastColor = hoursAhead > 0 ? getForecastColor(forecastedPm25) : city.color;
+            
+            // Rural nodes are rendered as tiny dots without popups for performance
+            if (city.isRuralNode) {
+              return (
+                <CircleMarker
+                  key={`rural-${index}`}
+                  center={[city.coordinates[1], city.coordinates[0]]}
+                  radius={2}
+                  pathOptions={{
+                    fillColor: forecastColor,
+                    fillOpacity: 0.8,
+                    color: forecastColor,
+                    weight: 0,
+                    interactive: false // Disable interaction for pure visual speed
+                  }}
+                />
+              );
+            }
+
+            const radius = Math.min(Math.max(6, forecastedPm25 / 10), 24);
+            
+            return (
+              <CircleMarker
+                key={`city-${city.name}`}
+                center={[city.coordinates[1], city.coordinates[0]]}
+                radius={isSelected ? radius + 4 : radius}
+                pathOptions={{
+                  fillColor: forecastColor,
+                  fillOpacity: 0.7,
+                  color: isSelected ? '#FFFFFF' : forecastColor,
+                  weight: isSelected ? 3 : 1
+                }}
+                eventHandlers={{
+                  click: () => onCitySelect(city.name),
+                }}
+              >
+                <Popup>
+                  <div className="p-1">
+                    <h3 className="font-bold text-lg mb-1">{city.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{city.state}</p>
+                    {hoursAhead > 0 && (
+                      <Badge className="bg-indigo-600 mb-2">T+{hoursAhead} Forecast</Badge>
+                    )}
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-semibold">{hoursAhead > 0 ? 'Predicted AQI:' : 'AQI:'}</span>
+                      <Badge style={{ backgroundColor: forecastColor, color: '#fff' }}>
+                        {hoursAhead > 0 ? Math.round(forecastedPm25 * 1.5) : city.aqi}
+                      </Badge>
+                    </div>
+                    <div className="text-sm">
+                      <p><strong>PM2.5:</strong> {Math.round(forecastedPm25)} µg/m³</p>
+                      <p><strong>PM10:</strong> {Math.round(forecastedPm25 * 1.6)} µg/m³</p>
+                    </div>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
+        </MapContainer>
       </div>
       
-      <div className="absolute top-2 right-2 md:top-4 md:right-4 flex space-x-2">
-        <Badge className="bg-[#00C853] text-white animate-pulse">
+      <div className="absolute top-2 right-2 md:top-4 md:right-4 flex space-x-2 z-[1000]">
+        <Badge className="bg-[#00C853] text-white animate-pulse shadow-md">
           <Activity className="w-3 h-3 mr-1" />
           Live Data
         </Badge>
-        <Badge className="bg-[#FF6F00] text-white">
+        <Badge className="bg-[#FF6F00] text-white shadow-md">
           <Zap className="w-3 h-3 mr-1" />
           Real-time
         </Badge>
@@ -322,21 +270,19 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect }: Enhance
 
       {/* Enhanced city selector grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mt-4 text-xs max-h-56 overflow-y-auto custom-scrollbar">
-        {citiesWithPositions.slice(0, 25).map((city) => (
+        {cities.slice(0, 25).map((city) => (
           <button
             key={city.name}
             onClick={() => onCitySelect(city.name)}
             className={`p-2 rounded-lg transition-all duration-300 text-left transform hover:scale-105 ${
               selectedCity === city.name
                 ? 'bg-gradient-to-r from-[#00C853]/20 to-[#00C853]/10 border-2 border-[#00C853]/50 shadow-lg scale-105'
-                : hoveredCity === city.name
-                ? 'bg-white/80 border border-[#00C853]/30 shadow-md'
                 : 'bg-white/60 border border-white/50 hover:bg-white/80'
             }`}
           >
             <div className="flex items-center space-x-2">
               <div 
-                className="w-3 h-3 rounded-full flex-shrink-0 animate-pulse"
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: city.color }}
               />
               <div className="min-w-0 flex-1">
@@ -353,10 +299,10 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect }: Enhance
         ))}
       </div>
       
-      {citiesWithPositions.length > 25 && (
+      {cities.length > 25 && (
         <div className="text-center mt-2">
           <span className="text-xs text-[#263238]/60">
-            Showing 25 of {citiesWithPositions.length} cities. Click map or search for more.
+            Showing 25 of {cities.length} cities. Click map or search for more.
           </span>
         </div>
       )}

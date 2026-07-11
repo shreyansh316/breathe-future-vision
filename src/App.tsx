@@ -7,6 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { LiteVillageView } from "@/components/LiteVillageView";
+import { useParams } from "react-router-dom";
+
+// Wrapper for the lite view to extract params
+const LiteVillageRoute = () => {
+  const { code } = useParams();
+  return <LiteVillageView villageCode={code || 'UNKNOWN'} />;
+};
 
 const queryClient = new QueryClient();
 
@@ -19,6 +27,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/lite/:code" element={<LiteVillageRoute />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
