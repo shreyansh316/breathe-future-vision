@@ -16,11 +16,65 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+
+// Utility to load Razorpay script dynamically
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const AccountSettings = () => {
   const location = useLocation();
   // Simple extraction of current tab based on URL
   const currentTab = location.pathname.split('/').pop() || 'profile';
+
+  const handlePayment = async (amount: number, planName: string) => {
+    toast.info("Connecting to Transact Bridge (MoR)...", {
+      description: `Generating secure checkout session for ${planName}...`
+    });
+
+    try {
+      // 1. Fetch Transact Bridge checkout URL from Python backend
+      const response = await fetch('http://localhost:8000/api/v1/payments/transact-bridge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, plan_name: planName, user_email: "user@example.com" })
+      });
+      
+      if (!response.ok) throw new Error("Failed to connect to backend server.");
+      const data = await response.json();
+      
+      if (data.status === "success" && data.checkout_url) {
+        toast.success("Session Created!", {
+          description: "Redirecting to secure MoR checkout..."
+        });
+        
+        // 2. Redirect to the Hosted Checkout Page
+        // In a real implementation, this navigates away to Transact Bridge.
+        // For the demo, we will simulate the redirect by opening it in a new tab or just alerting.
+        setTimeout(() => {
+          window.open(data.checkout_url, '_blank');
+        }, 1000);
+      } else {
+        throw new Error("Invalid response from payment gateway.");
+      }
+      
+    } catch (error: any) {
+      toast.error(`Payment Initialization Error`, {
+        description: error.message
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
@@ -136,9 +190,9 @@ const AccountSettings = () => {
                     </div>
                   </div>
                   <div className="px-6 py-4 border-t border-slate-50 mt-auto flex justify-end">
-                    <a href="#" className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500">
+                    <button onClick={() => handlePayment(2990, '3 Months')} className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500 focus:outline-none">
                       Purchase Now <div className="w-5 h-5 rounded-full bg-[#38BDF8] text-white flex items-center justify-center ml-2 text-[10px]"><ArrowRight className="w-3 h-3" /></div>
-                    </a>
+                    </button>
                   </div>
                 </div>
 
@@ -152,9 +206,9 @@ const AccountSettings = () => {
                     </div>
                   </div>
                   <div className="px-6 py-4 border-t border-slate-50 mt-auto flex justify-end">
-                    <a href="#" className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500">
+                    <button onClick={() => handlePayment(4990, '6 Months')} className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500 focus:outline-none">
                       Purchase Now <div className="w-5 h-5 rounded-full bg-[#38BDF8] text-white flex items-center justify-center ml-2 text-[10px]"><ArrowRight className="w-3 h-3" /></div>
-                    </a>
+                    </button>
                   </div>
                 </div>
 
@@ -173,9 +227,9 @@ const AccountSettings = () => {
                     </div>
                   </div>
                   <div className="px-6 py-4 border-t border-slate-50 mt-auto flex justify-end">
-                    <a href="#" className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500">
+                    <button onClick={() => handlePayment(7990, '12 Months')} className="text-[#38BDF8] text-sm font-medium flex items-center hover:text-blue-500 focus:outline-none">
                       Purchase Now <div className="w-5 h-5 rounded-full bg-[#38BDF8] text-white flex items-center justify-center ml-2 text-[10px]"><ArrowRight className="w-3 h-3" /></div>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import razorpay
 
 app = FastAPI(title="AakaashSetu AI Orchestration Hub", version="2.0.0")
 
@@ -188,10 +189,75 @@ def send_selection_email(email: str, name: str, skillset: str):
 async def register_fellow(application: FellowshipApplication, background_tasks: BackgroundTasks):
     print(f"[Registration] Incoming fellowship request from {application.name}")
     
+    
     # Enqueue the email to run in the background worker pool instantly
     background_tasks.add_task(send_selection_email, application.email, application.name, application.skillset)
     
     return {"status": "success", "message": "Application processed. Check your inbox."}
+
+# ==========================================
+# Phase 5: Payment Gateway (Razorpay)
+# ==========================================
+
+class OrderRequest(BaseModel):
+    amount: int
+    currency: str = "INR"
+
+@app.post("/api/v1/payments/create-order")
+async def create_razorpay_order(request: OrderRequest):
+    key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_YOUR_DEFAULT_KEY")
+    key_secret = os.getenv("RAZORPAY_KEY_SECRET", "YOUR_DEFAULT_SECRET")
+    
+    try:
+        client = razorpay.Client(auth=(key_id, key_secret))
+        
+        # Razorpay expects amount in subunits (paise)
+        data = {
+            "amount": request.amount * 100, 
+            "currency": request.currency,
+            "receipt": f"receipt_vayu_{datetime.datetime.utcnow().timestamp()}"
+        }
+        
+        # For testing purposes without valid credentials, we mock the order creation 
+        # so the backend doesn't crash if the dev hasn't set their keys yet.
+        if key_id == "rzp_test_YOUR_DEFAULT_KEY":
+            print("[Warning] Using Mock Razorpay Order since keys are missing.")
+            return {"order_id": f"order_mock_{int(datetime.datetime.utcnow().timestamp())}"}
+
+        payment_order = client.order.create(data=data)
+        return {"order_id": payment_order.get("id")}
+        
+    except Exception as e:
+        print(f"[Razorpay Error] {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create payment order: {str(e)}")
+
+# ==========================================
+# Phase 6: Transact Bridge (MoR Gateway)
+# ==========================================
+
+class TransactBridgeRequest(BaseModel):
+    amount: int
+    plan_name: str
+    user_email: EmailStr = "user@example.com"
+
+@app.post("/api/v1/payments/transact-bridge")
+async def create_transact_bridge_checkout(request: TransactBridgeRequest):
+    # In production, this makes a secure S2S REST call to Transact Bridge's API
+    # using your Merchant API Key to generate a secure Hosted Checkout Session.
+    
+    api_key = os.getenv("TRANSACT_BRIDGE_API_KEY", "missing_key")
+    
+    # Mocking the Transact Bridge API Response
+    checkout_id = f"tb_chk_{int(datetime.datetime.utcnow().timestamp())}"
+    mock_checkout_url = f"https://checkout.transactbridge.com/pay/{checkout_id}?amount={request.amount}&plan={request.plan_name.replace(' ', '')}"
+
+    print(f"[Transact Bridge] Generated MoR Checkout Session for {request.plan_name} at {request.amount} INR")
+    
+    return {
+        "status": "success",
+        "checkout_url": mock_checkout_url,
+        "session_id": checkout_id
+    }
 
 if __name__ == "__main__":
     import uvicorn

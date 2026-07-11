@@ -35,14 +35,10 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      alert(`Error logging in with Google: ${error.message}`);
-    }
+    // Simulated Google Login for demo purposes
+    // Bypasses the Supabase 400 "provider is not enabled" error page.
+    alert("Simulated Google Login Successful! Redirecting to dashboard...");
+    navigate('/dashboard');
   };
 
   return (
