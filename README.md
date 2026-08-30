@@ -1,6 +1,3 @@
-Here is the corrected and fully formatted `README.md` for your repository. The duplicate sections have been removed, and the architecture diagram, folder structure, and API payloads are now properly wrapped in code blocks so they render perfectly on GitHub.
-
-```markdown
 # 🌍 VayuRakshak — Breathe Future Vision
 
 <div align="center">
