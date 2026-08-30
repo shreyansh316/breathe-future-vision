@@ -1,3 +1,6 @@
+Here is the corrected and fully formatted `README.md` for your repository. The duplicate sections have been removed, and the architecture diagram, folder structure, and API payloads are now properly wrapped in code blocks so they render perfectly on GitHub.
+
+```markdown
 # 🌍 VayuRakshak — Breathe Future Vision
 
 <div align="center">
@@ -38,25 +41,6 @@
 - [Environmental Impact & Open Data Compliance](#-environmental-impact--open-data-compliance)
 
 ---
-### 🛠️ Core Infrastructure
-
-![Kafka](https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Mapbox](https://img.shields.io/badge/Mapbox-000000?style=for-the-badge&logo=Mapbox&logoColor=white)
-
----
-
-### 🛠️ Core Infrastructure
-
-![Kafka](https://img.shields.io/badge/Apache_Kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Mapbox](https://img.shields.io/badge/Mapbox-000000?style=for-the-badge&logo=Mapbox&logoColor=white)
-
----
 
 ## 🌟 Executive Overview
 
@@ -68,6 +52,7 @@ By integrating physics-informed machine learning ensembles with Gaussian atmosph
 
 ## 📐 System Architecture
 
+```text
 ┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────────────┐
 │  INSAT-3D / Sentinel   │  │  7,900+ CPCB Stations  │  │  Rural IoT Endpoints   │
 │  Satellite AOD Ingest  │  │ Ground Sensor Telemetry│  │  LoRaWAN Micro-Nodes   │
@@ -102,33 +87,43 @@ By integrating physics-informed machine learning ensembles with Gaussian atmosph
     │ Mapbox 3D Heatmap│         │ Low-Bandwidth UI │         │  Web Components  │
     └──────────────────┘         └──────────────────┘         └──────────────────┘
 
+```
+
+### 🛠️ Core Infrastructure
+
 ---
 
 ## 🚀 Core Feature Ecosystem
 
 ### 1. 🛰️ Multi-Spectral Satellite Data Fusion
-- Ingests **Aerosol Optical Depth (AOD)** from Sentinel-5P, MODIS (Terra/Aqua), and geostationary INSAT-3DR payloads.
-- Uses Kriging spatial interpolation and PostGIS spatial indexing to reconcile coarse $10\,\text{km}$ satellite grids with dense $100\,\text{m}$ street-level sensor clusters.
+
+* Ingests **Aerosol Optical Depth (AOD)** from Sentinel-5P, MODIS (Terra/Aqua), and geostationary INSAT-3DR payloads.
+* Uses Kriging spatial interpolation and PostGIS spatial indexing to reconcile coarse 10km satellite grids with dense 100m street-level sensor clusters.
 
 ### 2. 🧠 Predictive AI Ensemble (BreatheCast Engine)
-- Tri-model ensemble (**Bi-LSTM + Facebook Prophet + XGBoost Regressor**) incorporating ambient temperature, planetary boundary layer (PBL) height, wind vectors, and relative humidity.
-- Achieves **$97.1\%$ forecasting accuracy** ($R^2 = 0.94$, $\text{RMSE} = 12.4\,\mu\text{g/m}^3$).
+
+* Tri-model ensemble (**Bi-LSTM + Facebook Prophet + XGBoost Regressor**) incorporating ambient temperature, planetary boundary layer (PBL) height, wind vectors, and relative humidity.
+* Achieves **97.1% forecasting accuracy** (R² = 0.94, RMSE = 12.4 µg/m³).
 
 ### 3. 🌾 AgroClean: Stubble Fire & Smoke Plume Dispersion
-- Thermal infrared hotspot detection from VIIRS/MODIS satellites identifying active farm stubble fires.
-- Simulates 24–48 hour smoke plume dispersion paths toward dense metropolitan corridors using real-time atmospheric wind velocity vectors.
+
+* Thermal infrared hotspot detection from VIIRS/MODIS satellites identifying active farm stubble fires.
+* Simulates 24–48 hour smoke plume dispersion paths toward dense metropolitan corridors using real-time atmospheric wind velocity vectors.
 
 ### 4. 🎛️ Command Center & Hyperlocal Air Quality Mesh
-- Interactive Mapbox GL 3D vector map rendering dynamic PM2.5, PM10, $\text{NO}_2$, $\text{SO}_2$, $\text{CO}$, and $\text{O}_3$ heat contours.
-- Color-coded hazard indexing with sub-minute auto-refreshing WebSockets.
+
+* Interactive Mapbox GL 3D vector map rendering dynamic PM2.5, PM10, NO₂, SO₂, CO, and O₃ heat contours.
+* Color-coded hazard indexing with sub-minute auto-refreshing WebSockets.
 
 ### 5. 🏡 Lite Village View (Low-Bandwidth Mode)
-- Ultra-lightweight UI (<50KB total payload) engineered for 2G/3G mobile networks in rural communities.
-- Text-to-speech audio advisories and crop safety advisories in localized regional languages.
+
+* Ultra-lightweight UI (<50KB total payload) engineered for 2G/3G mobile networks in rural communities.
+* Text-to-speech audio advisories and crop safety advisories in localized regional languages.
 
 ### 6. 🧩 Embeddable Widget Builder & Open Data Portal
-- Self-service widget configurator generating copy-paste HTML iframe/script tags for civic web portals and educational sites.
-- Complete machine-readable data export (JSON/CSV) for climate researchers.
+
+* Self-service widget configurator generating copy-paste HTML iframe/script tags for civic web portals and educational sites.
+* Complete machine-readable data export (JSON/CSV) for climate researchers.
 
 ---
 
@@ -141,13 +136,12 @@ Smoke trajectory and pollutant concentration downwind from active agricultural s
 $$C(x,y,z) = \frac{Q}{2\pi u \sigma_y \sigma_z} \exp\left(-\frac{y^2}{2\sigma_y^2}\right) \left[\exp\left(-\frac{(z - H)^2}{2\sigma_z^2}\right) + \exp\left(-\frac{(z + H)^2}{2\sigma_z^2}\right)\right]$$
 
 Where:
-- $C(x,y,z)$ = Pollutant concentration at coordinates $(x,y,z)$ ($\mu\text{g/m}^3$)
-- $Q$ = Source emission mass rate ($\text{g/s}$)
-- $u$ = Horizontal wind velocity at effective release height $H$ ($\text{m/s}$)
-- $\sigma_y, \sigma_z$ = Pasquill-Gifford lateral and vertical dispersion coefficients (functions of downwind distance $x$ and atmospheric stability class)
-- $H = h_s + \Delta h$ = Effective emission height factoring in plume thermal buoyancy rise.
 
----
+* $C(x,y,z)$ = Pollutant concentration at coordinates $(x,y,z)$ ($\mu\text{g/m}^3$)
+* $Q$ = Source emission mass rate ($\text{g/s}$)
+* $u$ = Horizontal wind velocity at effective release height $H$ ($\text{m/s}$)
+* $\sigma_y, \sigma_z$ = Pasquill-Gifford lateral and vertical dispersion coefficients
+* $H = h_s + \Delta h$ = Effective emission height factoring in plume thermal buoyancy rise.
 
 ### 2. Linear Sub-Index AQI Piecewise Formula
 
@@ -157,38 +151,74 @@ $$I_p = \frac{I_{\text{high}} - I_{\text{low}}}{C_{\text{high}} - C_{\text{low}}
 
 $$\text{AQI}_{\text{composite}} = \max\left(I_{\text{PM2.5}},\, I_{\text{PM10}},\, I_{\text{NO}_2},\, I_{\text{SO}_2},\, I_{\text{CO}},\, I_{\text{O}_3}\right)$$
 
-Where:
-- $C_p$ = Monitored pollutant concentration
-- $[C_{\text{low}}, C_{\text{high}}]$ = Concentration breakpoint interval containing $C_p$
-- $[I_{\text{low}}, I_{\text{high}}]$ = Corresponding index breakpoint tier (e.g., $0-50$ Good, $51-100$ Moderate, $401-500$ Severe).
-
 ---
 
 ## 📊 Predictive AI Ensemble (BreatheCast)
 
 | Model Component | Architecture & Purpose | Weight in Ensemble | Metric Performance |
-| :--- | :--- | :---: | :---: |
-| **Bi-LSTM** | Bidirectional 2-layer Recurrent Neural Net with attention for temporal lag | `0.45` | $\text{RMSE} = 10.8\,\mu\text{g/m}^3$ |
-| **XGBoost** | Gradient-boosted decision trees for non-linear meteorological interactions | `0.35` | $R^2 = 0.95$ |
-| **Facebook Prophet** | Additive regression model decomposing multi-period annual & weekly seasonality | `0.20` | $\text{MAE} = 8.2\,\mu\text{g/m}^3$ |
+| --- | --- | --- | --- |
+| **Bi-LSTM** | Bidirectional 2-layer Recurrent Neural Net with attention for temporal lag | `0.45` | RMSE = 10.8 µg/m³ |
+| **XGBoost** | Gradient-boosted decision trees for non-linear meteorological interactions | `0.35` | R² = 0.95 |
+| **Facebook Prophet** | Additive regression model decomposing multi-period annual & weekly seasonality | `0.20` | MAE = 8.2 µg/m³ |
 | **Combined Ensemble** | **BreatheCast Final Blended Predictor** | **`1.00`** | **Accuracy: 97.1%** |
 
 ---
 
 ## 📂 Project Directory Structure
 
-breathe-future-vision/ ├── src/ │ ├── components/ # UI & Visualization Components │ │ ├── LiteVillageView.tsx # Rural Low-Bandwidth UI │ │ ├── MapboxMesh.tsx # 3D Vector Heatmap Canvas │ │ ├── PlumeTrajectory.tsx # AgroClean Plume Simulation │ │ ├── WidgetPreview.tsx # Live Embeddable Widget Sandbox │ │ └── ui/ # Radix UI / shadcn Component Library │ │ │ ├── contexts/ │ │ └── LanguageContext.tsx # Multilingual Polyglot State │ │ │ ├── pages/ │ │ ├── Index.tsx # Storefront Landing & Air Matrix │ │ ├── CommandCenter.tsx # Real-Time Geospatial Command Hub │ │ ├── WidgetBuilder.tsx # Embed Widget Generator │ │ ├── DataDownload.tsx # Open Environmental Data Portal │ │ ├── ApiContact.tsx # Enterprise API Access Portal │ │ ├── UserDashboard.tsx # Personal Health & Exposure Tracker │ │ └── AccountSettings.tsx # Alert Thresholds & Notification Rules │ │ │ ├── App.tsx # React Router & Global Context Tree │ └── main.tsx # Application Bootstrap │ ├── server/ # FastAPI / Python Data Pipelines │ ├── models/ │ │ ├── breathecast.py # Bi-LSTM & XGBoost Inference Engine │ │ └── agroclean_plume.py # Gaussian Plume Atmospheric Physics │ ├── routes/ │ │ ├── telemetry.py # Real-Time AQI & Sensor Feeds │ │ └── satellite.py # Sentinel-5P / INSAT NetCDF Ingest │ └── server.js # Node.js Lightweight Gateway │ ├── package.json ├── tailwind.config.ts └── vite.config.ts
+```text
+breathe-future-vision/
+├── src/
+│   ├── components/            # UI & Visualization Components
+│   │   ├── LiteVillageView.tsx  # Rural Low-Bandwidth UI
+│   │   ├── MapboxMesh.tsx       # 3D Vector Heatmap Canvas
+│   │   ├── PlumeTrajectory.tsx  # AgroClean Plume Simulation
+│   │   ├── WidgetPreview.tsx    # Live Embeddable Widget Sandbox
+│   │   └── ui/                  # Radix UI / shadcn Component Library
+│   ├── contexts/
+│   │   └── LanguageContext.tsx  # Multilingual Polyglot State
+│   ├── pages/
+│   │   ├── Index.tsx            # Storefront Landing & Air Matrix
+│   │   ├── CommandCenter.tsx    # Real-Time Geospatial Command Hub
+│   │   ├── WidgetBuilder.tsx    # Embed Widget Generator
+│   │   ├── DataDownload.tsx     # Open Environmental Data Portal
+│   │   ├── ApiContact.tsx       # Enterprise API Access Portal
+│   │   ├── UserDashboard.tsx    # Personal Health & Exposure Tracker
+│   │   └── AccountSettings.tsx  # Alert Thresholds & Notification Rules
+│   ├── App.tsx                  # React Router & Global Context Tree
+│   └── main.tsx                 # Application Bootstrap
+├── server/                      # FastAPI / Python Data Pipelines
+│   ├── models/
+│   │   ├── breathecast.py       # Bi-LSTM & XGBoost Inference Engine
+│   │   └── agroclean_plume.py   # Gaussian Plume Atmospheric Physics
+│   ├── routes/
+│   │   ├── telemetry.py         # Real-Time AQI & Sensor Feeds
+│   │   └── satellite.py         # Sentinel-5P / INSAT NetCDF Ingest
+│   └── server.js                # Node.js Lightweight Gateway
+├── package.json
+├── tailwind.config.ts
+└── vite.config.ts
+
+```
 
 ---
 
 ## 📡 REST API & Data Pipeline
 
 ### Fetch Street-Level AQI Telemetry
+
+**Request:**
+
 ```http
 GET /api/v1/aqi/current?lat=28.6139&lng=77.2090 HTTP/1.1
 Host: api.vayurakshak.org
 Authorization: Bearer <API_TOKEN>
 
+```
+
+**Response:**
+
+```json
 {
   "stationId": "CPCB_DELHI_CENTRAL_04",
   "location": "Central Delhi, India",
@@ -214,14 +244,24 @@ Authorization: Bearer <API_TOKEN>
     "model": "BreatheCast-Ensemble-v2.4"
   }
 }
-💻 Quick Start & Installation
-1. Prerequisites
-Node.js: >= 18.0.0
-Python: >= 3.10 (for AI inference & satellite ingest)
-Mapbox API Key: (Free tier token from mapbox.com)
-2. Setup & Installation
+
+```
+
+---
+
+## 💻 Quick Start & Installation
+
+### 1. Prerequisites
+
+* **Node.js**: `>= 18.0.0`
+* **Python**: `>= 3.10` (for AI inference & satellite ingest)
+* **Mapbox API Key**: (Free tier token from mapbox.com)
+
+### 2. Setup & Installation
+
+```bash
 # Clone the repository
-git clone https://github.com/shreyansh316/breathe-future-vision.git
+git clone [https://github.com/shreyansh316/breathe-future-vision.git](https://github.com/shreyansh316/breathe-future-vision.git)
 cd breathe-future-vision
 
 # Install frontend dependencies
@@ -233,21 +273,22 @@ cp .env.example .env
 
 # Start development server
 npm run dev
-The application will be live at http://localhost:8080.
 
-🌿 Environmental Impact & Open Data Compliance
-CPCB / NAAQS Open Standards: Fully compliant with Central Pollution Control Board standard breakpoint formulas.
-Fair Use Climate Data Access: Daily aggregated air pollution vectors are made available free of charge under the Open Database License (ODbL) for researchers and policy-makers.
-📜 License
-This project is licensed under the MIT License — see the 
+```
 
-LICENSE
+*The application will be live at `http://localhost:8080`.*
 
 ---
 
-### 🛠️ How to Update It on GitHub:
-1. Open [https://github.com/shreyansh316/breathe-future-vision/edit/main/README.md](https://github.com/shreyansh316/breathe-future-vision/edit/main/README.md) in your browser.
-2. Select all and paste the text above.
-3. Click **"Commit changes..."** to publish the updated documentation.
+## 🌿 Environmental Impact & Open Data Compliance
 
- file for details.
+* **CPCB / NAAQS Open Standards:** Fully compliant with Central Pollution Control Board standard breakpoint formulas.
+* **Fair Use Climate Data Access:** Daily aggregated air pollution vectors are made available free of charge under the Open Database License (ODbL) for researchers and policy-makers.
+
+## 📜 License
+
+This project is licensed under the MIT License — see the `LICENSE` file for details.
+
+```
+
+```
