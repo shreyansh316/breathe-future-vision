@@ -48,41 +48,40 @@ By integrating physics-informed machine learning ensembles with Gaussian atmosph
 ---
 
 ## 📐 System Architecture
-graph TD
-    subgraph Sources ["Data Sources"]
-        A[INSAT-3D / Sentinel<br>Satellite AOD Ingest]
-        B[7,900+ CPCB Stations<br>Ground Sensor Telemetry]
-        C[Rural IoT Endpoints<br>LoRaWAN Micro-Nodes]
-    end
 
-    D[KAFKA STREAM INGESTION ENGINE<br>Data Imputation & Calibration]
-
-    A --> D
-    B --> D
-    C --> D
-
-    subgraph AI ["AI & Modeling"]
-        E[BREATHECAST AI ENGINE<br>LSTM + Prophet + XGBoost<br>Accuracy: 97.1% R² = 0.94]
-        F[AGROCLEAN DISPERSION MODEL<br>Gaussian Plume Trajectory<br>Stubble Fire Smoke Vectors]
-    end
-
-    D --> E
-    D --> F
-
-    G[HIGH-THROUGHPUT FASTAPI HUB<br>PostgreSQL / Supabase + PostGIS]
-
-    E --> G
-    F --> G
-
-    subgraph Interfaces ["Frontend / Outputs"]
-        H[COMMAND CENTER<br>Mapbox 3D Heatmap]
-        I[LITE VILLAGE VIEW<br>Low-Bandwidth UI]
-        J[WIDGET BUILDER<br>Web Components]
-    end
-
-    G --> H
-    G --> I
-    G --> J
+┌────────────────────────┐  ┌────────────────────────┐  ┌────────────────────────┐
+│  INSAT-3D / Sentinel   │  │  7,900+ CPCB Stations  │  │  Rural IoT Endpoints   │
+│  Satellite AOD Ingest  │  │ Ground Sensor Telemetry│  │  LoRaWAN Micro-Nodes   │
+└───────────┬────────────┘  └───────────┬────────────┘  └───────────┬────────────┘
+            │                           │                           │
+            └───────────────────────────┼───────────────────────────┘
+                                        ▼
+                       ┌─────────────────────────────────────┐
+                       │    KAFKA STREAM INGESTION ENGINE    │
+                       │    Data Imputation & Calibration    │
+                       └──────────────────┬──────────────────┘
+                                          │
+               ┌──────────────────────────┴──────────────────────────┐
+               ▼                                                     ▼
+┌───────────────────────────────┐                 ┌───────────────────────────────┐
+│     BREATHECAST AI ENGINE     │                 │   AGROCLEAN DISPERSION MODEL  │
+│   LSTM + Prophet + XGBoost    │                 │   Gaussian Plume Trajectory   │
+│  Accuracy: 97.1% (R² = 0.94)  │                 │  Stubble Fire Smoke Vectors   │
+└───────────────┬───────────────┘                 └───────────────┬───────────────┘
+                │                                                 │
+                └─────────────────────────┬───────────────────────┘
+                                          ▼
+                       ┌─────────────────────────────────────┐
+                       │     HIGH-THROUGHPUT FASTAPI HUB     │
+                       │   PostgreSQL / Supabase + PostGIS   │
+                       └──────────────────┬──────────────────┘
+                                          │
+             ┌────────────────────────────┼────────────────────────────┐
+             ▼                            ▼                            ▼
+    ┌──────────────────┐         ┌──────────────────┐         ┌──────────────────┐
+    │  COMMAND CENTER  │         │ LITE VILLAGE VIEW│         │  WIDGET BUILDER  │
+    │ Mapbox 3D Heatmap│         │ Low-Bandwidth UI │         │  Web Components  │
+    └──────────────────┘         └──────────────────┘         └──────────────────┘
 
 ---
 
