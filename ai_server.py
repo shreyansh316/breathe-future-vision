@@ -1,3 +1,10 @@
+"""
+AakaashSetu AI Orchestration Hub
+To install dependencies for this server:
+    pip install -r requirements-ai.txt
+To run:
+    uvicorn ai_server:app --reload --port 8000
+"""
 import os
 from fastapi import FastAPI, HTTPException, BackgroundTasks, status
 from fastapi.middleware.cors import CORSMiddleware
