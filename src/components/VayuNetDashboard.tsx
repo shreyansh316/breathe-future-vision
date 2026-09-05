@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedIndiaMap } from './EnhancedIndiaMap';
@@ -13,6 +13,13 @@ export const VayuNetDashboard = () => {
   const [showFires, setShowFires] = useState(false);
   const [hoursAhead, setHoursAhead] = useState(0);
   const [isPredicting, setIsPredicting] = useState(false);
+
+  const handleTimeChange = useCallback((val: number) => {
+    setIsPredicting(true);
+    setHoursAhead(val);
+    const timer = setTimeout(() => setIsPredicting(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50/95 via-indigo-50/95 to-purple-50/95 border-2 border-blue-500/20 shadow-2xl backdrop-blur-sm">
@@ -102,12 +109,7 @@ export const VayuNetDashboard = () => {
       
       <div className="w-full">
         <BreatheCastTimeline 
-          onTimeChange={(val) => {
-            setIsPredicting(true);
-            setHoursAhead(val);
-            // Simulate API delay
-            setTimeout(() => setIsPredicting(false), 300);
-          }}
+          onTimeChange={handleTimeChange}
           isPredicting={isPredicting}
         />
       </div>

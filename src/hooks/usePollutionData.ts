@@ -27,21 +27,24 @@ export const usePollutionData = () => {
       
       const json = await response.json();
       
-      if (json.success && json.data) {
-        // Map backend schema to frontend City schema
-        const updatedCities: City[] = json.data.map((item: any) => ({
-          name: item.city,
-          state: item.state,
-          // Backend sends GeoJSON [lng, lat], maplibre uses [lng, lat] natively
-          coordinates: item.location.coordinates,
-          pm25: item.pm25,
-          pm10: item.pm10,
-          aqi: item.aqi.toString(),
-          color: item.color || getAqiColor(item.aqi),
-          actualAqi: item.aqi
-        }));
+      if (json.success && Array.isArray(json.data)) {
+        // Map backend schema to frontend City schema with strict coordinate validation
+        const updatedCities: City[] = json.data
+          .filter((item: any) => item && item.location && Array.isArray(item.location.coordinates) && item.location.coordinates.length >= 2 && !isNaN(Number(item.location.coordinates[0])) && !isNaN(Number(item.location.coordinates[1])))
+          .map((item: any) => ({
+            name: item.city || item.name || 'Unknown',
+            state: item.state || '',
+            coordinates: [Number(item.location.coordinates[0]), Number(item.location.coordinates[1])] as [number, number],
+            pm25: Number(item.pm25) || 0,
+            pm10: Number(item.pm10) || 0,
+            aqi: (item.aqi || 0).toString(),
+            color: item.color || getAqiColor(Number(item.aqi) || 0),
+            actualAqi: Number(item.aqi) || 0
+          }));
         
-        setCities(updatedCities);
+        if (updatedCities.length > 0) {
+          setCities(updatedCities);
+        }
         setLastUpdated(new Date());
         setRetryCount(0);
       }

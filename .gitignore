@@ -12,13 +12,17 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Environment variables & secrets
+.env
+.env*.local
+
+# Large datasets & binaries exceeding GitHub limits
+AirPollutionSeoul/
+*.joblib
+
+# Supabase CLI temp files
+supabase/.temp/
+scratch_*.sql
+load_*.py
+train_air_quality_model.py
+

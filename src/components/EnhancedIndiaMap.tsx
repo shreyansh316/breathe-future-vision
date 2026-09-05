@@ -84,11 +84,15 @@ const getForecastColor = (pm25: number) => {
 };
 
 // Point 100: Verify Absolute WCAG Text Contrast Standards
-const getContrastTextColor = (hex: string) => {
+const getContrastTextColor = (hex?: string) => {
+  if (!hex || typeof hex !== 'string' || !hex.startsWith('#') || hex.length < 7) {
+    return '#FFFFFF';
+  }
   // Convert hex to RGB
-  let r = parseInt(hex.slice(1, 3), 16) / 255;
-  let g = parseInt(hex.slice(3, 5), 16) / 255;
-  let b = parseInt(hex.slice(5, 7), 16) / 255;
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return '#FFFFFF';
 
   // Calculate relative luminance (WCAG formula)
   const luminance = 0.2126 * (r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4)) +
@@ -98,6 +102,7 @@ const getContrastTextColor = (hex: string) => {
   // WCAG recommended threshold
   return luminance > 0.179 ? '#0B0F19' : '#FFFFFF';
 };
+
 
 import { IndiaMap } from './IndiaMap';
 
@@ -118,7 +123,16 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
   const [showFires, setShowFires] = useState(initialFires);
   const [searchQuery, setSearchQuery] = useState('');
   const [hoverInfo, setHoverInfo] = useState<any>(null);
-  const [hasWebGL] = useState(checkWebGLSupport());
+  const [hasWebGL, setHasWebGL] = useState(checkWebGLSupport());
+
+  // Sync state if props change from parent VayuNet command center
+  useEffect(() => {
+    setShowHeatmap(initialHeatmap);
+  }, [initialHeatmap]);
+
+  useEffect(() => {
+    setShowFires(initialFires);
+  }, [initialFires]);
 
   // Graceful WebGL Fallback (Point 77)
   if (!hasWebGL) {
@@ -126,7 +140,7 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
       <div className="relative w-full space-y-4">
         <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs p-3 rounded-lg font-mono flex items-center">
           <Activity className="w-4 h-4 mr-2" />
-          [SYSTEM WARNING]: WebGL context degraded. Falling back to HTML5 Canvas high-density visualizer.
+          [SYSTEM NOTIFICATION]: Map engine running in high-density HTML5 Canvas visualizer.
         </div>
         <IndiaMap cities={cities} selectedCity={selectedCity} onCitySelect={onCitySelect} />
       </div>
@@ -135,15 +149,23 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
 
   // Smooth flyTo interpolation with 35deg pitch (Point 17)
   useEffect(() => {
-    const city = cities.find(c => c.name === selectedCity);
-    if (city && city.coordinates && mapRef.current) {
-      mapRef.current.flyTo({
-        center: [city.coordinates[0], city.coordinates[1]],
-        zoom: 7,
-        pitch: 35,
-        duration: 2000,
-        essential: true
-      });
+    if (!cities || !Array.isArray(cities)) return;
+    const city = cities.find(c => c && c.name === selectedCity);
+    if (city && Array.isArray(city.coordinates) && city.coordinates.length === 2 && !isNaN(city.coordinates[0]) && !isNaN(city.coordinates[1]) && mapRef.current) {
+      try {
+        const map = mapRef.current.getMap();
+        if (map && typeof map.flyTo === 'function') {
+          map.flyTo({
+            center: [city.coordinates[0], city.coordinates[1]],
+            zoom: 7,
+            pitch: 35,
+            duration: 2000,
+            essential: true
+          });
+        }
+      } catch (err) {
+        console.warn('Map flyTo bypassed:', err);
+      }
     }
   }, [selectedCity, cities]);
 
@@ -194,7 +216,7 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
   // Debounced hover tooltips (Point 72)
   const handleHover = useMemo(
     () => debounce((features: any[], point: { x: number, y: number }) => {
-      if (features && features.length > 0) {
+      if (features && features.length > 0 && features[0]?.geometry?.coordinates) {
         setHoverInfo({
           feature: features[0],
           x: point.x,
@@ -209,16 +231,18 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
 
   // Filter cities by search query
   const filteredCities = useMemo(() => {
-    if (!searchQuery) return cities;
-    return cities.filter(city => city.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (!cities || !Array.isArray(cities)) return [];
+    const valid = cities.filter(city => city && Array.isArray(city.coordinates) && city.coordinates.length === 2 && !isNaN(city.coordinates[0]) && !isNaN(city.coordinates[1]));
+    if (!searchQuery) return valid;
+    return valid.filter(city => city.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [cities, searchQuery]);
 
   // GeoJSON data preparation for WebGL points & heatmaps
   const geojsonData = useMemo<any>(() => {
     const features = filteredCities.map(city => {
       const trend = 1 + (hoursAhead / 120) * 1.5;
-      const forecastedPm25 = hoursAhead > 0 ? city.pm25 * trend : city.pm25;
-      const forecastColor = hoursAhead > 0 ? getForecastColor(forecastedPm25) : city.color;
+      const forecastedPm25 = hoursAhead > 0 ? (city.pm25 || 0) * trend : (city.pm25 || 0);
+      const forecastColor = hoursAhead > 0 ? getForecastColor(forecastedPm25) : (city.color || '#3b82f6');
       
       return {
         type: 'Feature',
@@ -233,12 +257,13 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
       };
     });
     return { type: 'FeatureCollection', features };
-  }, [cities, hoursAhead]);
+  }, [filteredCities, hoursAhead]);
 
   const fireGeoData = useMemo<any>(() => {
+    const validFires = (fires || []).filter(f => f && typeof f.lng === 'number' && typeof f.lat === 'number' && !isNaN(f.lng) && !isNaN(f.lat));
     return {
       type: 'FeatureCollection',
-      features: fires.map(fire => ({
+      features: validFires.map(fire => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [fire.lng, fire.lat] },
         properties: { ...fire }
@@ -248,8 +273,9 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
 
   // Vector Trajectory Paths (Point 76)
   const trajectoryGeoData = useMemo<any>(() => {
-    // Mock wind trajectories emanating from severe pollution hubs
-    const severeCities = cities.filter(c => c.pm25 > 150).slice(0, 5);
+    if (!cities || !Array.isArray(cities)) return { type: 'FeatureCollection', features: [] };
+    const validCities = cities.filter(c => c && Array.isArray(c.coordinates) && c.coordinates.length === 2 && !isNaN(c.coordinates[0]) && !isNaN(c.coordinates[1]));
+    const severeCities = validCities.filter(c => (c.pm25 || 0) > 150).slice(0, 5);
     const features = severeCities.map(city => {
       // Create a mock line string representing smoke trajectory based on wind
       const endLon = city.coordinates[0] + 1.5; // Wind blowing East
@@ -263,7 +289,7 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
             [endLon, endLat]
           ]
         },
-        properties: { intensity: city.pm25 }
+        properties: { intensity: city.pm25 || 0 }
       };
     });
     return { type: 'FeatureCollection', features };
@@ -271,12 +297,18 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
 
 
 
+  const interactiveLayerIds = useMemo(() => {
+    if (showHeatmap) return [];
+    return ['city-points', 'unclustered-point'];
+  }, [showHeatmap]);
+
   return (
     <div className="relative w-full space-y-4">
       {/* Map Container */}
       <div className="h-[600px] w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative">
         <Map
           ref={mapRef}
+          mapLib={maplibregl}
           initialViewState={{
             longitude: 78.9629,
             latitude: 20.5937,
@@ -292,8 +324,14 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
           attributionControl={false}
           mapStyle={mapStyle}
           onMoveEnd={onMoveEnd}
-          interactiveLayerIds={['city-points', 'cluster-count', 'unclustered-point']}
-          onMouseMove={(e) => handleHover(e.features || [], e.point)}
+          interactiveLayerIds={interactiveLayerIds}
+          onMouseMove={(e) => {
+            try {
+              handleHover(e.features || [], e.point);
+            } catch (err) {
+              // Silently handle transient hover query error
+            }
+          }}
           onMouseLeave={() => {
             handleHover.cancel();
             setHoverInfo(null);
@@ -301,15 +339,22 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
           onClick={(e) => {
             if (e.features && e.features.length > 0) {
               const feature = e.features[0];
-              if (feature.layer.id === 'unclustered-point' || feature.layer.id === 'city-points') {
-                onCitySelect(feature.properties.name);
+              const layerId = feature?.layer?.id;
+              if (layerId === 'unclustered-point' || layerId === 'city-points') {
+                if (feature?.properties?.name) {
+                  onCitySelect(feature.properties.name);
+                }
               }
             }
+          }}
+          onError={(e) => {
+            console.warn('[VayuNet GIS Warning] Map renderer recovered from event:', e);
           }}
         >
           <NavigationControl position="bottom-right" />
           <FullscreenControl position="bottom-right" />
           <AttributionControl compact={true} position="bottom-right" style={{ background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none' }} />
+
 
           {/* WebGL Heatmap Layer (Point 14) */}
           {showHeatmap && (
@@ -420,7 +465,7 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
           )}
 
           {/* Hover Tooltip */}
-          {hoverInfo && !showHeatmap && (
+          {hoverInfo && hoverInfo.feature?.geometry?.coordinates && Array.isArray(hoverInfo.feature.geometry.coordinates) && hoverInfo.feature.geometry.coordinates.length >= 2 && !showHeatmap && (
             <Popup
               longitude={hoverInfo.feature.geometry.coordinates[0]}
               latitude={hoverInfo.feature.geometry.coordinates[1]}
@@ -429,20 +474,20 @@ export const EnhancedIndiaMap = ({ cities, selectedCity, onCitySelect, showHeatm
               className="z-50"
             >
               <div className="p-2 bg-[#0B0F19] border border-slate-800 rounded-lg text-slate-200">
-                <h3 className="font-bold text-white text-base mb-1">{hoverInfo.feature.properties.name}</h3>
-                <p className="text-xs text-slate-400 mb-2">{hoverInfo.feature.properties.state}</p>
+                <h3 className="font-bold text-white text-base mb-1">{hoverInfo.feature.properties?.name || 'Sensor Node'}</h3>
+                <p className="text-xs text-slate-400 mb-2">{hoverInfo.feature.properties?.state || ''}</p>
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="font-semibold text-xs text-slate-300">AQI:</span>
                   <Badge style={{ 
-                    backgroundColor: hoverInfo.feature.properties.color, 
-                    color: getContrastTextColor(hoverInfo.feature.properties.color) 
+                    backgroundColor: hoverInfo.feature.properties?.color || '#3b82f6', 
+                    color: getContrastTextColor(hoverInfo.feature.properties?.color || '#3b82f6') 
                   }}>
-                    {hoverInfo.feature.properties.aqi}
+                    {hoverInfo.feature.properties?.aqi || 'N/A'}
                   </Badge>
                 </div>
                 <div className="text-xs mt-2">
-                  <p><strong>PM2.5:</strong> {Number(hoverInfo.feature.properties.forecastedPm25).toFixed(1)} µg/m³</p>
-                  <p><strong>PM10:</strong> {(Number(hoverInfo.feature.properties.forecastedPm25) * 1.6).toFixed(1)} µg/m³</p>
+                  <p><strong>PM2.5:</strong> {Number(hoverInfo.feature.properties?.forecastedPm25 || 0).toFixed(1)} µg/m³</p>
+                  <p><strong>PM10:</strong> {(Number(hoverInfo.feature.properties?.forecastedPm25 || 0) * 1.6).toFixed(1)} µg/m³</p>
                 </div>
               </div>
             </Popup>
